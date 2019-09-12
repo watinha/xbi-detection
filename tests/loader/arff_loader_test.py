@@ -18,9 +18,10 @@ class ArffLoaderTest(TestCase):
         loader = ArffLoader()
         result = loader.execute(arff_example)
         self.assertEqual(3, len(result['data']))
-        self.assertEqual(4.9, result['data'][1][0])
+        self.assertEqual('4.9', result['data'][1][0])
         self.assertEqual(5, len(result['attributes']))
         self.assertEqual('sepalwidth', result['attributes'][1][0])
+        self.assertEqual('<U32', result['data'].dtype)
 
     def test_execute_loads_arff_with_two_rows (self):
         arff_example = """@RELATION iris
@@ -34,6 +35,7 @@ class ArffLoaderTest(TestCase):
         loader = ArffLoader()
         result = loader.execute(arff_example)
         self.assertEqual(2, len(result['data']))
-        self.assertEqual(3.5, result['data'][0][1])
+        self.assertEqual('3.5', result['data'][0][1])
         self.assertEqual(4, len(result['attributes']))
         self.assertEqual('another', result['attributes'][2][0])
+        self.assertEqual('<U32', result['data'].dtype)

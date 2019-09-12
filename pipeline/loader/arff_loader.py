@@ -1,4 +1,4 @@
-import arff
+import arff, np
 
 class ArffLoader():
 
@@ -6,4 +6,6 @@ class ArffLoader():
         pass
 
     def execute(self, data):
-        return arff.load(data)
+        result = arff.load(data)
+        result['data'] = np.array(result['data'])
+        return result
