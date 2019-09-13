@@ -6,7 +6,26 @@ from pipeline.loader.arff_loader import ArffLoader
 from pipeline.extractor.xbi_extractor import XBIExtractor
 from pipeline.classifier.classifier_tunning import ClassifierTunning
 
-features = ['childsNumber', 'textLength']
+features = [
+    #'URL', 'id', 'tagName',
+    'childsNumber', 'textLength',
+    #'basePlatform', 'targetPlatform', 'baseBrowser', 'targetBrowser',
+    'baseDPI', 'targetDPI',
+    #'baseScreenshot', 'targetScreenshot',
+    'baseX', 'targetX', 'baseY', 'targetY',
+    'baseHeight', 'targetHeight', 'baseWidth', 'targetWidth',
+    'baseParentX', 'targetParentX', 'baseParentY', 'targetParentY',
+    'imageDiff', 'chiSquared',
+    'baseDeviceWidth', 'targetDeviceWidth', 'baseViewportWidth', 'targetViewportWidth',
+    #'xpath', 'baseXpath', 'targetXpath',
+    'phash',
+    'basePreviousSiblingLeft', 'targetPreviousSiblingLeft',
+    'basePreviousSiblingTop', 'targetPreviousSiblingTop',
+    'baseNextSiblingLeft', 'targetNextSiblingLeft',
+    'baseNextSiblingTop', 'targetNextSiblingTop',
+    'baseTextNodes', 'targetTextNodes',
+    #'baseFontFamily', 'targetFontFamily'
+]
 
 pipeline = Pipeline([
     ArffLoader(),
