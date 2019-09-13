@@ -1,10 +1,11 @@
 from sklearn import tree
-from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import GridSearchCV,GroupKFold,cross_validate
 
 from pipeline import Pipeline
 from pipeline.loader.arff_loader import ArffLoader
 from pipeline.extractor.xbi_extractor import XBIExtractor
 from pipeline.classifier.classifier_tunning import ClassifierTunning
+from pipeline.model_evaluation.groupkfold_cv import GroupKFoldCV
 
 features = [
     #'URL', 'id', 'tagName',
@@ -36,7 +37,8 @@ pipeline = Pipeline([
         'min_samples_split': [2, 30, 100],
         'class_weight': [None, 'balanced']
     }, cv=2),
-    tree.DecisionTreeClassifier(random_state=42))
+    tree.DecisionTreeClassifier(random_state=42)),
+    GroupKFoldCV(GroupKFold(n_splits=10), 'URL', cross_validate)
 ])
 result = pipeline.execute(open('data/dataset-040919.arff').read())
-print(result)
+print(result['score'])
