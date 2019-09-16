@@ -1,3 +1,5 @@
+import random
+
 from sklearn import tree
 from sklearn.model_selection import GridSearchCV,GroupKFold,cross_validate
 from functools import reduce
@@ -31,6 +33,7 @@ features = [
     #'baseFontFamily', 'targetFontFamily'
 ]
 
+random.seed(42)
 pipeline = Pipeline([
     ArffLoader(),
     XBIExtractor(features, 'Result'),
