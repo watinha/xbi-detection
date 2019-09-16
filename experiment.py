@@ -6,6 +6,7 @@ from pipeline import Pipeline
 from pipeline.loader.arff_loader import ArffLoader
 from pipeline.extractor.xbi_extractor import XBIExtractor
 from pipeline.extractor.crosscheck_extractor import CrossCheckExtractor
+from pipeline.extractor.browserninja_extractor import BrowserNinjaExtractor
 from pipeline.classifier.classifier_tunning import ClassifierTunning
 from pipeline.model_evaluation.groupkfold_cv import GroupKFoldCV
 
@@ -33,7 +34,8 @@ features = [
 pipeline = Pipeline([
     ArffLoader(),
     XBIExtractor(features, 'Result'),
-    CrossCheckExtractor('Result'),
+    #CrossCheckExtractor('Result'),
+    BrowserNinjaExtractor('Result'),
     ClassifierTunning(GridSearchCV(tree.DecisionTreeClassifier(), {
         'criterion': ["gini", "entropy"],
         'max_depth': [10, 60, 100, None],
