@@ -1,6 +1,6 @@
-import random
+import random, arff
 
-from sklearn import tree
+from sklearn import tree, svm, ensemble
 from sklearn.model_selection import GridSearchCV,GroupKFold,cross_validate
 from functools import reduce
 
@@ -36,9 +36,28 @@ features = [
 random.seed(42)
 pipeline = Pipeline([
     ArffLoader(),
-    XBIExtractor(features, 'Result'),
+    #XBIExtractor(features, 'Result'),
     #CrossCheckExtractor('Result'),
     BrowserNinjaExtractor('Result'),
+    #ClassifierTunning(GridSearchCV(ensemble.RandomForestClassifier(), {
+    #    'n_estimators': [5, 10, 100],
+    #    'criterion': ["gini", "entropy"],
+    #    'max_depth': [10, 50, 100, None],
+    #    'min_samples_split': [2, 10, 100],
+    #    'class_weight': [None, 'balanced']
+    #}, cv=2),
+    #ensemble.RandomForestClassifier(random_state=42)),
+    #ClassifierTunning(GridSearchCV(svm.LinearSVC(), {
+    #    #'kernel': ['linear', 'rbf', 'poly', 'sigmoid'],
+    #    #'kernel': ['linear'],
+    #    'C': [1, 10, 100],
+    #    #'degree': [1, 2, 3],
+    #    #'coef0': [0, 10, 100],
+    #    'tol': [0.001, 0.1, 1],
+    #    'class_weight': ['balanced', None],
+    #    'max_iter': [30000]
+    #}, cv=2),
+    #svm.LinearSVC(random_state=42)),
     ClassifierTunning(GridSearchCV(tree.DecisionTreeClassifier(), {
         'criterion': ["gini", "entropy"],
         'max_depth': [10, 60, 100, None],
@@ -48,7 +67,8 @@ pipeline = Pipeline([
     tree.DecisionTreeClassifier(random_state=42)),
     GroupKFoldCV(GroupKFold(n_splits=10), 'URL', cross_validate)
 ])
-result = pipeline.execute(open('data/dataset-040919.arff').read())
+result = pipeline.execute(open('data/dataset-040919.filtered.arff').read())
+print('Model: ' + str(result['model']))
 print('Trainning F1: ' + str(result['score']['train_f1_macro']))
 print('Test      F1: ' + str(result['score']['test_f1_macro']))
 print('Trainning F1: %f' % (reduce(lambda x,y: x+y, result['score']['train_f1_macro']) / 10))
@@ -57,3 +77,21 @@ print('Test      F1: %f' % (reduce(lambda x,y: x+y, result['score']['test_f1_mac
 #print('Test      Precision: ' + str(result['score']['test_precision_macro']))
 #print('Trainning Recall: ' + str(result['score']['train_recall_macro']))
 #print('Test      Recall: ' + str(result['score']['test_recall_macro']))
+
+#print('--- Error analysis ---')
+#model = result['model']
+#dataset = result['data']
+#X = result['X']
+#y = result['y']
+#model.fit(X, y)
+#r = model.predict(X)
+#diff = [ dataset[i].tolist() for i in range(0,len(r)) if r[i] != y[i] ]
+#diff_x = [ X[i].tolist() for i in range(0,len(r)) if r[i] != y[i] ]
+#arff_data = {
+#    'attributes': result['attributes'],
+#    'description': result['description'],
+#    'relation': result['relation'],
+#    'data': diff
+#}
+#print(arff.dumps(arff_data))
+#print(diff_x)
