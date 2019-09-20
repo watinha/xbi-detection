@@ -12,7 +12,8 @@ class BrowserNinjaExtractor():
                           'left_visibility', 'right_visibility',
                           'left_comp', 'right_comp', 'y_comp']
 
-        attributes = [ attribute[0] for attribute in arff_data['attributes'] ]
+        attributes = [ attribute[0]
+                for attribute in arff_data['attributes'] ]
         X = []
 
         X.append(arff_data['data'][:, attributes.index('childsNumber')])
@@ -25,7 +26,10 @@ class BrowserNinjaExtractor():
 
         X.append(arff_data['data'][:, attributes.index('phash')])
         X.append(arff_data['data'][:, attributes.index('chiSquared')])
-        X.append(arff_data['data'][:, attributes.index('imageDiff')])
+
+        image_diff = np.array(arff_data['data'][:, attributes.index('imageDiff')], dtype='float64')
+        min_area = np.minimum(base_width * base_height, target_width * target_height)
+        X.append(image_diff / (np.maximum(min_area, 1) * 255))
 
         base_viewport = np.array(arff_data['data'][:, attributes.index('baseViewportWidth')], dtype='float64')
         target_viewport = np.array(arff_data['data'][:, attributes.index('targetViewportWidth')], dtype='float64')
