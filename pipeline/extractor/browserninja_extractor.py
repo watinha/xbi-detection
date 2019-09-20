@@ -33,8 +33,8 @@ class BrowserNinjaExtractor():
 
         base_viewport = np.array(arff_data['data'][:, attributes.index('baseViewportWidth')], dtype='float64')
         target_viewport = np.array(arff_data['data'][:, attributes.index('targetViewportWidth')], dtype='float64')
-        X.append(np.abs((base_width - target_width)/(base_viewport - target_viewport)))
-        X.append(np.abs((base_height - target_height)/np.maximum(base_height, target_height)))
+        X.append(np.abs((base_width - target_width)/np.maximum(np.abs(base_viewport - target_viewport), 1)))
+        X.append(np.abs((base_height - target_height)/np.maximum(np.maximum(base_height, target_height), 1)))
 
         base_left = np.array(arff_data['data'][:, attributes.index('baseX')], dtype='float64')
         base_right = np.array(base_viewport - (base_left + base_width), dtype='float64')
@@ -43,11 +43,11 @@ class BrowserNinjaExtractor():
         X.append((base_right - base_viewport) - (target_right - target_viewport))
         X.append((base_left - base_viewport) - (target_left - target_viewport))
 
-        X.append(np.abs((base_left - target_left) / (base_viewport - target_viewport)))
-        X.append(np.abs((base_right - target_right) / (base_viewport - target_viewport)))
+        X.append(np.abs((base_left - target_left) / np.maximum(np.abs(base_viewport - target_viewport), 1)))
+        X.append(np.abs((base_right - target_right) / np.maximum(np.abs(base_viewport - target_viewport), 1)))
         base_y = np.array(arff_data['data'][:, attributes.index('baseY')], dtype='float64')
         target_y = np.array(arff_data['data'][:, attributes.index('targetY')], dtype='float64')
-        X.append(np.abs((base_y - target_y) / (base_viewport - target_viewport)))
+        X.append(np.abs((base_y - target_y) / np.maximum(np.abs(base_viewport - target_viewport), 1)))
 
         arff_data['X'] = np.array(X, dtype='float64').T
         arff_data['y'] = np.array(arff_data['data'][:, attributes.index(self._class_attr)])
