@@ -26,6 +26,7 @@ class BrowserNinjaExtractorTest(TestCase):
 @ATTRIBUTE %s {0,1}
 @DATA
 """ % (class_attr)
+        self.extractor = BrowserNinjaExtractor(class_attr=class_attr)
         return arff_header + data
 
 
@@ -34,8 +35,7 @@ class BrowserNinjaExtractorTest(TestCase):
 0,0,1,2,3,4,5,6,7,8,100,0.12,360,414,0.3,0"""
         arff_data = arff.load(self.generate_arff(data))
         arff_data['data'] = np.array(arff_data['data'])
-        extractor = BrowserNinjaExtractor(class_attr='Result')
-        result = extractor.execute(arff_data)
+        result = self.extractor.execute(arff_data)
         self.assertEqual(arff_data['attributes'], result['attributes'])
         self.assertEqual(['childsNumber', 'textLength', 'area',
                           'phash', 'chiSquared', 'imageDiff',
@@ -48,8 +48,7 @@ class BrowserNinjaExtractorTest(TestCase):
         arff_data = arff.load(self.generate_arff("""13,17,1,2,3,4,5,6,7,8,100,0.12,360,414,0.3,0
 0,0,1,2,3,4,5,6,7,8,100,0.12,360,414,0.3,0"""))
         arff_data['data'] = np.array(arff_data['data'])
-        extractor = BrowserNinjaExtractor(class_attr='Result')
-        result = extractor.execute(arff_data)
+        result = self.extractor.execute(arff_data)
         self.assertEqual(13, result['X'][0][0])
         self.assertEqual(17, result['X'][0][1])
         self.assertEqual(48, result['X'][0][2])
@@ -61,8 +60,7 @@ class BrowserNinjaExtractorTest(TestCase):
         arff_data = arff.load(self.generate_arff("""13,17,1,2,3,4,5,6,7,8,100,0.12,360,414,0.3,0
 0,0,1,2,3,4,5,3,7,10,1000,0.25,360,414,0.15,0"""))
         arff_data['data'] = np.array(arff_data['data'])
-        extractor = BrowserNinjaExtractor(class_attr='Result')
-        result = extractor.execute(arff_data)
+        result = self.extractor.execute(arff_data)
         self.assertEqual(0.3, result['X'][0][3])
         self.assertEqual(0.12, result['X'][0][4])
         self.assertEqual(100/(35 * 255), result['X'][0][5])
@@ -74,8 +72,7 @@ class BrowserNinjaExtractorTest(TestCase):
         arff_data = arff.load(self.generate_arff("""13,17,1,2,3,4,5,6,0,8,100,0.12,360,414,0.3,0
 0,0,1,2,3,4,5,3,7,10,1000,0.25,360,414,0.15,0"""))
         arff_data['data'] = np.array(arff_data['data'])
-        extractor = BrowserNinjaExtractor(class_attr='Result')
-        result = extractor.execute(arff_data)
+        result = self.extractor.execute(arff_data)
         self.assertEqual(0.3, result['X'][0][3])
         self.assertEqual(0.12, result['X'][0][4])
         self.assertEqual(100/255, result['X'][0][5])
@@ -84,8 +81,7 @@ class BrowserNinjaExtractorTest(TestCase):
         arff_data = arff.load(self.generate_arff("""13,17,1,2,3,4,5,6,7,8,100,0.12,360,414,0.3,0
 0,0,1,2,3,4,10,15,20,33,1000,0.25,360,380,0.15,0"""))
         arff_data['data'] = np.array(arff_data['data'])
-        extractor = BrowserNinjaExtractor(class_attr='Result')
-        result = extractor.execute(arff_data)
+        result = self.extractor.execute(arff_data)
         self.assertEqual(1/54, result['X'][0][6])
         self.assertEqual(1/6, result['X'][0][7])
         self.assertEqual(13/20, result['X'][1][6])
@@ -95,8 +91,7 @@ class BrowserNinjaExtractorTest(TestCase):
         arff_data = arff.load(self.generate_arff("""13,17,1,2,3,4,5,6,7,8,100,0.12,360,360,0.3,0
 0,0,1,2,3,4,0,0,20,33,1000,0.25,360,380,0.15,0"""))
         arff_data['data'] = np.array(arff_data['data'])
-        extractor = BrowserNinjaExtractor(class_attr='Result')
-        result = extractor.execute(arff_data)
+        result = self.extractor.execute(arff_data)
         self.assertEqual(1, result['X'][0][6])
         self.assertEqual(1/6, result['X'][0][7])
         self.assertEqual(13/20, result['X'][1][6])
@@ -106,8 +101,7 @@ class BrowserNinjaExtractorTest(TestCase):
         arff_data = arff.load(self.generate_arff("""13,17,1,2,3,4,5,6,7,8,100,0.12,360,414,0.3,0
 0,0,100,150,20,15,10,15,20,33,1000,0.25,360,380,0.15,0"""))
         arff_data['data'] = np.array(arff_data['data'])
-        extractor = BrowserNinjaExtractor(class_attr='Result')
-        result = extractor.execute(arff_data)
+        result = self.extractor.execute(arff_data)
         # right = (354 - 360) - (406 - 414)
         self.assertEqual(2, result['X'][0][8])
         self.assertEqual(53, result['X'][0][9])
@@ -119,8 +113,7 @@ class BrowserNinjaExtractorTest(TestCase):
         arff_data = arff.load(self.generate_arff("""13,17,1,2,3,4,5,6,7,8,100,0.12,360,414,0.3,0
 0,0,100,150,20,15,10,15,20,33,1000,0.25,360,380,0.15,0"""))
         arff_data['data'] = np.array(arff_data['data'])
-        extractor = BrowserNinjaExtractor(class_attr='Result')
-        result = extractor.execute(arff_data)
+        result = self.extractor.execute(arff_data)
         self.assertEqual(1/54, result['X'][0][10])
         self.assertEqual(52/54, result['X'][0][11])
         self.assertEqual(1/54, result['X'][0][12])
@@ -132,8 +125,7 @@ class BrowserNinjaExtractorTest(TestCase):
         arff_data = arff.load(self.generate_arff("""13,17,1,2,3,4,5,6,7,8,100,0.12,360,360,0.3,0
 0,0,100,150,20,15,10,15,20,33,1000,0.25,360,360,0.15,0"""))
         arff_data['data'] = np.array(arff_data['data'])
-        extractor = BrowserNinjaExtractor(class_attr='Result')
-        result = extractor.execute(arff_data)
+        result = self.extractor.execute(arff_data)
         self.assertEqual(1, result['X'][0][10])
         self.assertEqual(2, result['X'][0][11])
         self.assertEqual(1, result['X'][0][12])
@@ -147,8 +139,7 @@ class BrowserNinjaExtractorTest(TestCase):
         arff_data = arff.load(self.generate_arff("""13,17,1,2,3,4,5,6,7,8,100,0.12,360,414,0.3,0
 0,0,100,150,20,15,10,15,20,33,1000,0.25,360,380,0.15,1""", class_attr='xbi'))
         arff_data['data'] = np.array(arff_data['data'])
-        extractor = BrowserNinjaExtractor(class_attr='xbi')
-        result = extractor.execute(arff_data)
+        result = self.extractor.execute(arff_data)
         self.assertEqual(2, len(result['y']))
         self.assertEqual('0', result['y'][0])
         self.assertEqual('1', result['y'][1])

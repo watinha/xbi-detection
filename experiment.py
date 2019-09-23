@@ -8,7 +8,7 @@ from pipeline import Pipeline
 from pipeline.loader.arff_loader import ArffLoader
 from pipeline.extractor.xbi_extractor import XBIExtractor
 from pipeline.extractor.crosscheck_extractor import CrossCheckExtractor
-from pipeline.extractor.browserninja_extractor import BrowserNinjaExtractor
+from pipeline.extractor.browserninja import BrowserNinjaExtractor
 from pipeline.classifier.classifier_tunning import ClassifierTunning
 from pipeline.model_evaluation.groupkfold_cv import GroupKFoldCV
 
