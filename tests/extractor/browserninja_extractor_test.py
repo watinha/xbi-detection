@@ -2,12 +2,12 @@ import arff,np
 
 from unittest import TestCase
 
-from pipeline.extractor.browserninja_extractor import BrowserNinjaExtractor
+from pipeline.extractor.browserninja import BrowserNinjaExtractor
 
 class BrowserNinjaExtractorTest(TestCase):
 
-    def test_execute_extracts_features_from_arff(self):
-        arff_data = arff.load("""@RELATION browserninja.website
+    def generate_arff(self, data, class_attr='Result'):
+        arff_header = """@RELATION browserninja.website
 @ATTRIBUTE childsNumber NUMERIC
 @ATTRIBUTE textLength NUMERIC
 @ATTRIBUTE baseX NUMERIC
@@ -23,10 +23,16 @@ class BrowserNinjaExtractorTest(TestCase):
 @ATTRIBUTE baseViewportWidth NUMERIC
 @ATTRIBUTE targetViewportWidth NUMERIC
 @ATTRIBUTE phash NUMERIC
-@ATTRIBUTE Result {0,1}
+@ATTRIBUTE %s {0,1}
 @DATA
-13,17,1,2,3,4,5,6,7,8,100,0.12,360,414,0.3,0
-0,0,1,2,3,4,5,6,7,8,100,0.12,360,414,0.3,0""")
+""" % (class_attr)
+        return arff_header + data
+
+
+    def test_execute_extracts_features_from_arff(self):
+        data = """13,17,1,2,3,4,5,6,7,8,100,0.12,360,414,0.3,0
+0,0,1,2,3,4,5,6,7,8,100,0.12,360,414,0.3,0"""
+        arff_data = arff.load(self.generate_arff(data))
         arff_data['data'] = np.array(arff_data['data'])
         extractor = BrowserNinjaExtractor(class_attr='Result')
         result = extractor.execute(arff_data)
@@ -38,26 +44,9 @@ class BrowserNinjaExtractorTest(TestCase):
                           'left_comp', 'right_comp', 'y_comp'], result['features'])
 
     def test_extracts_complexity_features(self):
-        arff_data = arff.load("""@RELATION browserninja.website
-@ATTRIBUTE childsNumber NUMERIC
-@ATTRIBUTE textLength NUMERIC
-@ATTRIBUTE baseX NUMERIC
-@ATTRIBUTE targetX NUMERIC
-@ATTRIBUTE baseY NUMERIC
-@ATTRIBUTE targetY NUMERIC
-@ATTRIBUTE baseHeight NUMERIC
-@ATTRIBUTE targetHeight NUMERIC
-@ATTRIBUTE baseWidth NUMERIC
-@ATTRIBUTE targetWidth NUMERIC
-@ATTRIBUTE imageDiff NUMERIC
-@ATTRIBUTE chiSquared NUMERIC
-@ATTRIBUTE baseViewportWidth NUMERIC
-@ATTRIBUTE targetViewportWidth NUMERIC
-@ATTRIBUTE phash NUMERIC
-@ATTRIBUTE Result {0,1}
-@DATA
-13,17,1,2,3,4,5,6,7,8,100,0.12,360,414,0.3,0
-0,0,1,2,3,4,5,6,7,8,100,0.12,360,414,0.3,0""")
+
+        arff_data = arff.load(self.generate_arff("""13,17,1,2,3,4,5,6,7,8,100,0.12,360,414,0.3,0
+0,0,1,2,3,4,5,6,7,8,100,0.12,360,414,0.3,0"""))
         arff_data['data'] = np.array(arff_data['data'])
         extractor = BrowserNinjaExtractor(class_attr='Result')
         result = extractor.execute(arff_data)
@@ -69,26 +58,8 @@ class BrowserNinjaExtractorTest(TestCase):
         self.assertEqual(48, result['X'][1][2])
 
     def test_execute_extracts_image_comparison_features(self):
-        arff_data = arff.load("""@RELATION browserninja.website
-@ATTRIBUTE childsNumber NUMERIC
-@ATTRIBUTE textLength NUMERIC
-@ATTRIBUTE baseX NUMERIC
-@ATTRIBUTE targetX NUMERIC
-@ATTRIBUTE baseY NUMERIC
-@ATTRIBUTE targetY NUMERIC
-@ATTRIBUTE baseHeight NUMERIC
-@ATTRIBUTE targetHeight NUMERIC
-@ATTRIBUTE baseWidth NUMERIC
-@ATTRIBUTE targetWidth NUMERIC
-@ATTRIBUTE imageDiff NUMERIC
-@ATTRIBUTE chiSquared NUMERIC
-@ATTRIBUTE baseViewportWidth NUMERIC
-@ATTRIBUTE targetViewportWidth NUMERIC
-@ATTRIBUTE phash NUMERIC
-@ATTRIBUTE Result {0,1}
-@DATA
-13,17,1,2,3,4,5,6,7,8,100,0.12,360,414,0.3,0
-0,0,1,2,3,4,5,3,7,10,1000,0.25,360,414,0.15,0""")
+        arff_data = arff.load(self.generate_arff("""13,17,1,2,3,4,5,6,7,8,100,0.12,360,414,0.3,0
+0,0,1,2,3,4,5,3,7,10,1000,0.25,360,414,0.15,0"""))
         arff_data['data'] = np.array(arff_data['data'])
         extractor = BrowserNinjaExtractor(class_attr='Result')
         result = extractor.execute(arff_data)
@@ -100,26 +71,8 @@ class BrowserNinjaExtractorTest(TestCase):
         self.assertEqual(1000/(30 * 255), result['X'][1][5])
 
     def test_execute_extracts_image_comparison_features_when_area_is_zero(self):
-        arff_data = arff.load("""@RELATION browserninja.website
-@ATTRIBUTE childsNumber NUMERIC
-@ATTRIBUTE textLength NUMERIC
-@ATTRIBUTE baseX NUMERIC
-@ATTRIBUTE targetX NUMERIC
-@ATTRIBUTE baseY NUMERIC
-@ATTRIBUTE targetY NUMERIC
-@ATTRIBUTE baseHeight NUMERIC
-@ATTRIBUTE targetHeight NUMERIC
-@ATTRIBUTE baseWidth NUMERIC
-@ATTRIBUTE targetWidth NUMERIC
-@ATTRIBUTE imageDiff NUMERIC
-@ATTRIBUTE chiSquared NUMERIC
-@ATTRIBUTE baseViewportWidth NUMERIC
-@ATTRIBUTE targetViewportWidth NUMERIC
-@ATTRIBUTE phash NUMERIC
-@ATTRIBUTE Result {0,1}
-@DATA
-13,17,1,2,3,4,5,6,0,8,100,0.12,360,414,0.3,0
-0,0,1,2,3,4,5,3,7,10,1000,0.25,360,414,0.15,0""")
+        arff_data = arff.load(self.generate_arff("""13,17,1,2,3,4,5,6,0,8,100,0.12,360,414,0.3,0
+0,0,1,2,3,4,5,3,7,10,1000,0.25,360,414,0.15,0"""))
         arff_data['data'] = np.array(arff_data['data'])
         extractor = BrowserNinjaExtractor(class_attr='Result')
         result = extractor.execute(arff_data)
@@ -128,26 +81,8 @@ class BrowserNinjaExtractorTest(TestCase):
         self.assertEqual(100/255, result['X'][0][5])
 
     def test_execute_extracts_height_and_width_comparison(self):
-        arff_data = arff.load("""@RELATION browserninja.website
-@ATTRIBUTE childsNumber NUMERIC
-@ATTRIBUTE textLength NUMERIC
-@ATTRIBUTE baseX NUMERIC
-@ATTRIBUTE targetX NUMERIC
-@ATTRIBUTE baseY NUMERIC
-@ATTRIBUTE targetY NUMERIC
-@ATTRIBUTE baseHeight NUMERIC
-@ATTRIBUTE targetHeight NUMERIC
-@ATTRIBUTE baseWidth NUMERIC
-@ATTRIBUTE targetWidth NUMERIC
-@ATTRIBUTE imageDiff NUMERIC
-@ATTRIBUTE chiSquared NUMERIC
-@ATTRIBUTE baseViewportWidth NUMERIC
-@ATTRIBUTE targetViewportWidth NUMERIC
-@ATTRIBUTE phash NUMERIC
-@ATTRIBUTE Result {0,1}
-@DATA
-13,17,1,2,3,4,5,6,7,8,100,0.12,360,414,0.3,0
-0,0,1,2,3,4,10,15,20,33,1000,0.25,360,380,0.15,0""")
+        arff_data = arff.load(self.generate_arff("""13,17,1,2,3,4,5,6,7,8,100,0.12,360,414,0.3,0
+0,0,1,2,3,4,10,15,20,33,1000,0.25,360,380,0.15,0"""))
         arff_data['data'] = np.array(arff_data['data'])
         extractor = BrowserNinjaExtractor(class_attr='Result')
         result = extractor.execute(arff_data)
@@ -157,26 +92,8 @@ class BrowserNinjaExtractorTest(TestCase):
         self.assertEqual(1/3, result['X'][1][7])
 
     def test_execute_extracts_height_and_width_comparison_when_zero_happens(self):
-        arff_data = arff.load("""@RELATION browserninja.website
-@ATTRIBUTE childsNumber NUMERIC
-@ATTRIBUTE textLength NUMERIC
-@ATTRIBUTE baseX NUMERIC
-@ATTRIBUTE targetX NUMERIC
-@ATTRIBUTE baseY NUMERIC
-@ATTRIBUTE targetY NUMERIC
-@ATTRIBUTE baseHeight NUMERIC
-@ATTRIBUTE targetHeight NUMERIC
-@ATTRIBUTE baseWidth NUMERIC
-@ATTRIBUTE targetWidth NUMERIC
-@ATTRIBUTE imageDiff NUMERIC
-@ATTRIBUTE chiSquared NUMERIC
-@ATTRIBUTE baseViewportWidth NUMERIC
-@ATTRIBUTE targetViewportWidth NUMERIC
-@ATTRIBUTE phash NUMERIC
-@ATTRIBUTE Result {0,1}
-@DATA
-13,17,1,2,3,4,5,6,7,8,100,0.12,360,360,0.3,0
-0,0,1,2,3,4,0,0,20,33,1000,0.25,360,380,0.15,0""")
+        arff_data = arff.load(self.generate_arff("""13,17,1,2,3,4,5,6,7,8,100,0.12,360,360,0.3,0
+0,0,1,2,3,4,0,0,20,33,1000,0.25,360,380,0.15,0"""))
         arff_data['data'] = np.array(arff_data['data'])
         extractor = BrowserNinjaExtractor(class_attr='Result')
         result = extractor.execute(arff_data)
@@ -186,26 +103,8 @@ class BrowserNinjaExtractorTest(TestCase):
         self.assertEqual(0, result['X'][1][7])
 
     def test_execute_extracts_visibility_comparison(self):
-        arff_data = arff.load("""@RELATION browserninja.website
-@ATTRIBUTE childsNumber NUMERIC
-@ATTRIBUTE textLength NUMERIC
-@ATTRIBUTE baseX NUMERIC
-@ATTRIBUTE targetX NUMERIC
-@ATTRIBUTE baseY NUMERIC
-@ATTRIBUTE targetY NUMERIC
-@ATTRIBUTE baseHeight NUMERIC
-@ATTRIBUTE targetHeight NUMERIC
-@ATTRIBUTE baseWidth NUMERIC
-@ATTRIBUTE targetWidth NUMERIC
-@ATTRIBUTE imageDiff NUMERIC
-@ATTRIBUTE chiSquared NUMERIC
-@ATTRIBUTE baseViewportWidth NUMERIC
-@ATTRIBUTE targetViewportWidth NUMERIC
-@ATTRIBUTE phash NUMERIC
-@ATTRIBUTE Result {0,1}
-@DATA
-13,17,1,2,3,4,5,6,7,8,100,0.12,360,414,0.3,0
-0,0,100,150,20,15,10,15,20,33,1000,0.25,360,380,0.15,0""")
+        arff_data = arff.load(self.generate_arff("""13,17,1,2,3,4,5,6,7,8,100,0.12,360,414,0.3,0
+0,0,100,150,20,15,10,15,20,33,1000,0.25,360,380,0.15,0"""))
         arff_data['data'] = np.array(arff_data['data'])
         extractor = BrowserNinjaExtractor(class_attr='Result')
         result = extractor.execute(arff_data)
@@ -217,26 +116,8 @@ class BrowserNinjaExtractorTest(TestCase):
         self.assertEqual(-30, result['X'][1][9])
 
     def test_execute_comparison_based_on_viewport (self):
-        arff_data = arff.load("""@RELATION browserninja.website
-@ATTRIBUTE childsNumber NUMERIC
-@ATTRIBUTE textLength NUMERIC
-@ATTRIBUTE baseX NUMERIC
-@ATTRIBUTE targetX NUMERIC
-@ATTRIBUTE baseY NUMERIC
-@ATTRIBUTE targetY NUMERIC
-@ATTRIBUTE baseHeight NUMERIC
-@ATTRIBUTE targetHeight NUMERIC
-@ATTRIBUTE baseWidth NUMERIC
-@ATTRIBUTE targetWidth NUMERIC
-@ATTRIBUTE imageDiff NUMERIC
-@ATTRIBUTE chiSquared NUMERIC
-@ATTRIBUTE baseViewportWidth NUMERIC
-@ATTRIBUTE targetViewportWidth NUMERIC
-@ATTRIBUTE phash NUMERIC
-@ATTRIBUTE Result {0,1}
-@DATA
-13,17,1,2,3,4,5,6,7,8,100,0.12,360,414,0.3,0
-0,0,100,150,20,15,10,15,20,33,1000,0.25,360,380,0.15,0""")
+        arff_data = arff.load(self.generate_arff("""13,17,1,2,3,4,5,6,7,8,100,0.12,360,414,0.3,0
+0,0,100,150,20,15,10,15,20,33,1000,0.25,360,380,0.15,0"""))
         arff_data['data'] = np.array(arff_data['data'])
         extractor = BrowserNinjaExtractor(class_attr='Result')
         result = extractor.execute(arff_data)
@@ -248,26 +129,8 @@ class BrowserNinjaExtractorTest(TestCase):
         self.assertEqual(5/20, result['X'][1][12])
 
     def test_execute_comparison_based_on_viewport_when_zero_happens (self):
-        arff_data = arff.load("""@RELATION browserninja.website
-@ATTRIBUTE childsNumber NUMERIC
-@ATTRIBUTE textLength NUMERIC
-@ATTRIBUTE baseX NUMERIC
-@ATTRIBUTE targetX NUMERIC
-@ATTRIBUTE baseY NUMERIC
-@ATTRIBUTE targetY NUMERIC
-@ATTRIBUTE baseHeight NUMERIC
-@ATTRIBUTE targetHeight NUMERIC
-@ATTRIBUTE baseWidth NUMERIC
-@ATTRIBUTE targetWidth NUMERIC
-@ATTRIBUTE imageDiff NUMERIC
-@ATTRIBUTE chiSquared NUMERIC
-@ATTRIBUTE baseViewportWidth NUMERIC
-@ATTRIBUTE targetViewportWidth NUMERIC
-@ATTRIBUTE phash NUMERIC
-@ATTRIBUTE Result {0,1}
-@DATA
-13,17,1,2,3,4,5,6,7,8,100,0.12,360,360,0.3,0
-0,0,100,150,20,15,10,15,20,33,1000,0.25,360,360,0.15,0""")
+        arff_data = arff.load(self.generate_arff("""13,17,1,2,3,4,5,6,7,8,100,0.12,360,360,0.3,0
+0,0,100,150,20,15,10,15,20,33,1000,0.25,360,360,0.15,0"""))
         arff_data['data'] = np.array(arff_data['data'])
         extractor = BrowserNinjaExtractor(class_attr='Result')
         result = extractor.execute(arff_data)
@@ -281,26 +144,8 @@ class BrowserNinjaExtractorTest(TestCase):
 
 
     def test_execute_also_insert_y_labels (self):
-        arff_data = arff.load("""@RELATION browserninja.website
-@ATTRIBUTE childsNumber NUMERIC
-@ATTRIBUTE textLength NUMERIC
-@ATTRIBUTE baseX NUMERIC
-@ATTRIBUTE targetX NUMERIC
-@ATTRIBUTE baseY NUMERIC
-@ATTRIBUTE targetY NUMERIC
-@ATTRIBUTE baseHeight NUMERIC
-@ATTRIBUTE targetHeight NUMERIC
-@ATTRIBUTE baseWidth NUMERIC
-@ATTRIBUTE targetWidth NUMERIC
-@ATTRIBUTE imageDiff NUMERIC
-@ATTRIBUTE chiSquared NUMERIC
-@ATTRIBUTE baseViewportWidth NUMERIC
-@ATTRIBUTE targetViewportWidth NUMERIC
-@ATTRIBUTE phash NUMERIC
-@ATTRIBUTE xbi {0,1}
-@DATA
-13,17,1,2,3,4,5,6,7,8,100,0.12,360,414,0.3,0
-0,0,100,150,20,15,10,15,20,33,1000,0.25,360,380,0.15,1""")
+        arff_data = arff.load(self.generate_arff("""13,17,1,2,3,4,5,6,7,8,100,0.12,360,414,0.3,0
+0,0,100,150,20,15,10,15,20,33,1000,0.25,360,380,0.15,1""", class_attr='xbi'))
         arff_data['data'] = np.array(arff_data['data'])
         extractor = BrowserNinjaExtractor(class_attr='xbi')
         result = extractor.execute(arff_data)
