@@ -1,6 +1,7 @@
 import random, arff
 
 from sklearn import tree, svm, ensemble
+from sklearn.feature_selection import SelectKBest, chi2, f_classif
 from sklearn.model_selection import GridSearchCV,GroupKFold,cross_validate
 from functools import reduce
 
@@ -10,6 +11,7 @@ from pipeline.extractor.xbi_extractor import XBIExtractor
 from pipeline.extractor.crosscheck_extractor import CrossCheckExtractor
 from pipeline.extractor.browserninja import BrowserNinjaExtractor
 from pipeline.extractor.browserninja.font_family_extractor import FontFamilyExtractor
+from pipeline.feature_selection import FeatureSelection
 from pipeline.classifier.classifier_tunning import ClassifierTunning
 from pipeline.model_evaluation.groupkfold_cv import GroupKFoldCV
 
@@ -41,6 +43,7 @@ pipeline = Pipeline([
     #CrossCheckExtractor('Result'),
     BrowserNinjaExtractor('Result'),
     #FontFamilyExtractor(),
+    #FeatureSelection(SelectKBest(f_classif, k=20)),
     #ClassifierTunning(GridSearchCV(ensemble.RandomForestClassifier(), {
     #    'n_estimators': [5, 10, 100],
     #    'criterion': ["gini", "entropy"],
@@ -65,12 +68,14 @@ pipeline = Pipeline([
         'max_depth': [10, 60, 100, None],
         'min_samples_split': [2, 30, 100],
         'class_weight': [None, 'balanced']
-    }, cv=2),
+    }, cv=10),
     tree.DecisionTreeClassifier(random_state=42)),
     GroupKFoldCV(GroupKFold(n_splits=10), 'URL', cross_validate)
 ])
 result = pipeline.execute(open('data/dataset-040919.filtered.arff').read())
 print('Model: ' + str(result['model']))
+print('Features: ' + str(result['features']))
+print('X dimensions:' + str(result['X'].shape))
 print('Trainning F1: ' + str(result['score']['train_f1_macro']))
 print('Test      F1: ' + str(result['score']['test_f1_macro']))
 print('Trainning F1: %f' % (reduce(lambda x,y: x+y, result['score']['train_f1_macro']) / 10))
