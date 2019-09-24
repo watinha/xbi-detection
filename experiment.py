@@ -9,6 +9,7 @@ from pipeline.loader.arff_loader import ArffLoader
 from pipeline.extractor.xbi_extractor import XBIExtractor
 from pipeline.extractor.crosscheck_extractor import CrossCheckExtractor
 from pipeline.extractor.browserninja import BrowserNinjaExtractor
+from pipeline.extractor.browserninja.font_family_extractor import FontFamilyExtractor
 from pipeline.classifier.classifier_tunning import ClassifierTunning
 from pipeline.model_evaluation.groupkfold_cv import GroupKFoldCV
 
@@ -39,6 +40,7 @@ pipeline = Pipeline([
     #XBIExtractor(features, 'Result'),
     #CrossCheckExtractor('Result'),
     BrowserNinjaExtractor('Result'),
+    #FontFamilyExtractor(),
     #ClassifierTunning(GridSearchCV(ensemble.RandomForestClassifier(), {
     #    'n_estimators': [5, 10, 100],
     #    'criterion': ["gini", "entropy"],
