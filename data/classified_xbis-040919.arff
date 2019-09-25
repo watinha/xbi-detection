@@ -47,7 +47,7 @@
 @ATTRIBUTE targetTextNodes NUMERIC
 @ATTRIBUTE baseFontFamily STRING
 @ATTRIBUTE targetFontFamily STRING
-@ATTRIBUTE Result {0, 1}
+@ATTRIBUTE Result NUMERIC
 
 @DATA
 http://wwatana.be/mobile/mobile/201602/04/1.html,102.0,DIV,0.0,19.0,'iOS 12.1 - Safari -- iOS - iPhone 8','Android null - Chrome -- Android - MotoG4',null,null,2.0,3.0,results/iphone8/102.png,results/motog4/102.png,35.0,35.0,1541.0,1543.0,62.0,98.0,337.0,323.0,35.0,35.0,1304.0,1306.0,2827695.0,89266.9,750.0,1080.0,375.0,360.0,/body[2]/div[6]/div[1]/div[1]/div[1]/div[2],/body[2]/div[6]/div[1]/div[1]/div[1]/div[2],/body[2]/div[6]/div[1]/div[1]/div[1]/div[2],0.5,35.0,35.0,1502.0,1504.0,0.0,0.0,0.0,0.0,1.0,1.0,-webkit-standard,'Times New Roman',3
