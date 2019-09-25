@@ -2,11 +2,11 @@ import arff,np
 
 from unittest import TestCase
 
-from pipeline.extractor.browserninja import BrowserNinjaExtractor
+from pipeline.extractor.browserninja import *
 
 class BrowserNinjaExtractorTest(TestCase):
 
-    def generate_arff(self, data, class_attr='Result'):
+    def generate_arff(self, data, class_attr='Result', extractors=[]):
         arff_header = """@RELATION browserninja.website
 @ATTRIBUTE childsNumber NUMERIC
 @ATTRIBUTE textLength NUMERIC
@@ -26,7 +26,7 @@ class BrowserNinjaExtractorTest(TestCase):
 @ATTRIBUTE %s {0,1}
 @DATA
 """ % (class_attr)
-        self.extractor = BrowserNinjaExtractor(class_attr=class_attr)
+        self.extractor = BrowserNinjaCompositeExtractor(class_attr=class_attr, extractors=extractors)
         return arff_header + data
 
 
@@ -44,9 +44,10 @@ class BrowserNinjaExtractorTest(TestCase):
                           'left_comp', 'right_comp', 'y_comp'], result['features'])
 
     def test_extracts_complexity_features(self):
-
-        arff_data = arff.load(self.generate_arff("""13,17,1,2,3,4,5,6,7,8,100,0.12,360,414,0.3,0
-0,0,1,2,3,4,5,6,7,8,100,0.12,360,414,0.3,0"""))
+        arff_data = arff.load(self.generate_arff(
+            """13,17,1,2,3,4,5,6,7,8,100,0.12,360,414,0.3,0
+0,0,1,2,3,4,5,6,7,8,100,0.12,360,414,0.3,0""",
+            extractors=[ ComplexityExtractor() ]))
         arff_data['data'] = np.array(arff_data['data'])
         result = self.extractor.execute(arff_data)
         self.assertEqual(13, result['X'][0][0])
@@ -58,7 +59,8 @@ class BrowserNinjaExtractorTest(TestCase):
 
     def test_execute_extracts_image_comparison_features(self):
         arff_data = arff.load(self.generate_arff("""13,17,1,2,3,4,5,6,7,8,100,0.12,360,414,0.3,0
-0,0,1,2,3,4,5,3,7,10,1000,0.25,360,414,0.15,0"""))
+0,0,1,2,3,4,5,3,7,10,1000,0.25,360,414,0.15,0""",
+            extractors=[ ComplexityExtractor(), ImageComparisonExtractor() ]))
         arff_data['data'] = np.array(arff_data['data'])
         result = self.extractor.execute(arff_data)
         self.assertEqual(0.3, result['X'][0][3])
@@ -70,7 +72,8 @@ class BrowserNinjaExtractorTest(TestCase):
 
     def test_execute_extracts_image_comparison_features_when_area_is_zero(self):
         arff_data = arff.load(self.generate_arff("""13,17,1,2,3,4,5,6,0,8,100,0.12,360,414,0.3,0
-0,0,1,2,3,4,5,3,7,10,1000,0.25,360,414,0.15,0"""))
+0,0,1,2,3,4,5,3,7,10,1000,0.25,360,414,0.15,0""",
+            extractors=[ ComplexityExtractor(), ImageComparisonExtractor() ]))
         arff_data['data'] = np.array(arff_data['data'])
         result = self.extractor.execute(arff_data)
         self.assertEqual(0.3, result['X'][0][3])
@@ -79,7 +82,8 @@ class BrowserNinjaExtractorTest(TestCase):
 
     def test_execute_extracts_height_and_width_comparison(self):
         arff_data = arff.load(self.generate_arff("""13,17,1,2,3,4,5,6,7,8,100,0.12,360,414,0.3,0
-0,0,1,2,3,4,10,15,20,33,1000,0.25,360,380,0.15,0"""))
+0,0,1,2,3,4,10,15,20,33,1000,0.25,360,380,0.15,0""",
+            extractors=[ ComplexityExtractor(), ImageComparisonExtractor(), SizeViewportExtractor() ]))
         arff_data['data'] = np.array(arff_data['data'])
         result = self.extractor.execute(arff_data)
         self.assertEqual(1/54, result['X'][0][6])
@@ -89,7 +93,8 @@ class BrowserNinjaExtractorTest(TestCase):
 
     def test_execute_extracts_height_and_width_comparison_when_zero_happens(self):
         arff_data = arff.load(self.generate_arff("""13,17,1,2,3,4,5,6,7,8,100,0.12,360,360,0.3,0
-0,0,1,2,3,4,0,0,20,33,1000,0.25,360,380,0.15,0"""))
+0,0,1,2,3,4,0,0,20,33,1000,0.25,360,380,0.15,0""",
+            extractors=[ ComplexityExtractor(), ImageComparisonExtractor(), SizeViewportExtractor() ]))
         arff_data['data'] = np.array(arff_data['data'])
         result = self.extractor.execute(arff_data)
         self.assertEqual(1, result['X'][0][6])
@@ -99,7 +104,8 @@ class BrowserNinjaExtractorTest(TestCase):
 
     def test_execute_extracts_visibility_comparison(self):
         arff_data = arff.load(self.generate_arff("""13,17,1,2,3,4,5,6,7,8,100,0.12,360,414,0.3,0
-0,0,100,150,20,15,10,15,20,33,1000,0.25,360,380,0.15,0"""))
+0,0,100,150,20,15,10,15,20,33,1000,0.25,360,380,0.15,0""",
+            extractors=[ ComplexityExtractor(), ImageComparisonExtractor(), SizeViewportExtractor(), VisibilityExtractor() ]))
         arff_data['data'] = np.array(arff_data['data'])
         result = self.extractor.execute(arff_data)
         # right = (354 - 360) - (406 - 414)
@@ -111,7 +117,9 @@ class BrowserNinjaExtractorTest(TestCase):
 
     def test_execute_comparison_based_on_viewport (self):
         arff_data = arff.load(self.generate_arff("""13,17,1,2,3,4,5,6,7,8,100,0.12,360,414,0.3,0
-0,0,100,150,20,15,10,15,20,33,1000,0.25,360,380,0.15,0"""))
+0,0,100,150,20,15,10,15,20,33,1000,0.25,360,380,0.15,0""",
+            extractors=[ ComplexityExtractor(), ImageComparisonExtractor(), SizeViewportExtractor(),
+              VisibilityExtractor(), PositionViewportExtractor() ]))
         arff_data['data'] = np.array(arff_data['data'])
         result = self.extractor.execute(arff_data)
         self.assertEqual(1/54, result['X'][0][10])
@@ -123,7 +131,9 @@ class BrowserNinjaExtractorTest(TestCase):
 
     def test_execute_comparison_based_on_viewport_when_zero_happens (self):
         arff_data = arff.load(self.generate_arff("""13,17,1,2,3,4,5,6,7,8,100,0.12,360,360,0.3,0
-0,0,100,150,20,15,10,15,20,33,1000,0.25,360,360,0.15,0"""))
+0,0,100,150,20,15,10,15,20,33,1000,0.25,360,360,0.15,0""",
+            extractors=[ ComplexityExtractor(), ImageComparisonExtractor(), SizeViewportExtractor(),
+              VisibilityExtractor(), PositionViewportExtractor() ]))
         arff_data['data'] = np.array(arff_data['data'])
         result = self.extractor.execute(arff_data)
         self.assertEqual(1, result['X'][0][10])

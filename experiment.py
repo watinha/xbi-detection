@@ -9,7 +9,7 @@ from pipeline import Pipeline
 from pipeline.loader.arff_loader import ArffLoader
 from pipeline.extractor.xbi_extractor import XBIExtractor
 from pipeline.extractor.crosscheck_extractor import CrossCheckExtractor
-from pipeline.extractor.browserninja import BrowserNinjaExtractor
+from pipeline.extractor.browserninja import *
 from pipeline.extractor.browserninja.font_family_extractor import FontFamilyExtractor
 from pipeline.feature_selection import FeatureSelection
 from pipeline.classifier.classifier_tunning import ClassifierTunning
@@ -41,7 +41,13 @@ pipeline = Pipeline([
     ArffLoader(),
     #XBIExtractor(features, 'Result'),
     #CrossCheckExtractor('Result'),
-    BrowserNinjaExtractor('Result'),
+    BrowserNinjaCompositeExtractor('Result',
+        extractors=[
+            ComplexityExtractor(),
+            ImageComparisonExtractor(),
+            SizeViewportExtractor(),
+            VisibilityExtractor(),
+            PositionViewportExtractor() ]),
     #FontFamilyExtractor(),
     #FeatureSelection(SelectKBest(f_classif, k=20)),
     #ClassifierTunning(GridSearchCV(ensemble.RandomForestClassifier(), {
@@ -72,7 +78,7 @@ pipeline = Pipeline([
     tree.DecisionTreeClassifier(random_state=42)),
     GroupKFoldCV(GroupKFold(n_splits=10), 'URL', cross_validate)
 ])
-result = pipeline.execute(open('data/dataset-040919.filtered.arff').read())
+result = pipeline.execute(open('data/classified/external-dataset.arff').read())
 print('Model: ' + str(result['model']))
 print('Features: ' + str(result['features']))
 print('X dimensions:' + str(result['X'].shape))
