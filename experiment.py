@@ -47,8 +47,9 @@ pipeline = Pipeline([
             ImageComparisonExtractor(),
             SizeViewportExtractor(),
             VisibilityExtractor(),
-            PositionViewportExtractor() ]),
-    #FontFamilyExtractor(),
+            PositionViewportExtractor(),
+            FontFamilyExtractor()
+        ]),
     #FeatureSelection(SelectKBest(f_classif, k=20)),
     #ClassifierTunning(GridSearchCV(ensemble.RandomForestClassifier(), {
     #    'n_estimators': [5, 10, 100],

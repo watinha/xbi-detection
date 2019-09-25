@@ -2,7 +2,7 @@ import np
 
 class BrowserNinjaCompositeExtractor():
 
-    def __init__(self, class_attr, extractors = []):
+    def __init__(self, class_attr='Result', extractors = []):
         self._extractors = extractors
         self._class_attr = class_attr
 
@@ -15,7 +15,8 @@ class BrowserNinjaCompositeExtractor():
 
         attributes = [ attribute[0]
                 for attribute in arff_data['attributes'] ]
-        X = []
+
+        X = (arff_data['X'].T.tolist() if 'X' in arff_data else [])
 
         for extractor in self._extractors:
             X = extractor.execute(arff_data, attributes, X)
