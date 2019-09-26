@@ -39,6 +39,7 @@ class ComplexityExtractor():
         X.append(np.maximum(base_width * base_height, target_width * target_height))
         return X
 
+
 class ImageComparisonExtractor():
 
     def execute(self, arff_data, attributes, X):
@@ -54,6 +55,7 @@ class ImageComparisonExtractor():
         X.append(image_diff / (np.maximum(min_area, 1) * 255))
         return X
 
+
 class SizeViewportExtractor():
 
     def execute(self, arff_data, attributes, X):
@@ -66,6 +68,7 @@ class SizeViewportExtractor():
         X.append(np.abs((base_width - target_width)/np.maximum(np.abs(base_viewport - target_viewport), 1)))
         X.append(np.abs((base_height - target_height)/np.maximum(np.maximum(base_height, target_height), 1)))
         return X
+
 
 class VisibilityExtractor():
 
@@ -81,6 +84,7 @@ class VisibilityExtractor():
         X.append((base_right - base_viewport) - (target_right - target_viewport))
         X.append((base_left - base_viewport) - (target_left - target_viewport))
         return X
+
 
 class PositionViewportExtractor():
 
