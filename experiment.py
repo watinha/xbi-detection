@@ -26,7 +26,7 @@ features = [
     #'baseHeight', 'targetHeight', 'baseWidth', 'targetWidth',
     #'baseParentX', 'targetParentX', 'baseParentY', 'targetParentY',
     #'imageDiff', 'chiSquared',
-    #'baseDeviceWidth', 'targetDeviceWidth', 'baseViewportWidth', 'targetViewportWidth',
+    'baseDeviceWidth', 'targetDeviceWidth', 'baseViewportWidth', 'targetViewportWidth',
     #'xpath', 'baseXpath', 'targetXpath',
     #'phash',
     #'basePreviousSiblingLeft', 'targetPreviousSiblingLeft',
@@ -52,14 +52,14 @@ pipeline = Pipeline([
     #        FontFamilyExtractor(),
             RelativePositionExtractor()
         ]),
-    #FeatureSelection(SelectKBest(f_classif, k=20)),
+    #FeatureSelection(SelectKBest(f_classif, k=13)),
     #ClassifierTunning(GridSearchCV(ensemble.RandomForestClassifier(), {
-    #    'n_estimators': [5, 10, 100],
+    #    'n_estimators': [2, 10, 100],
     #    'criterion': ["gini", "entropy"],
     #    'max_depth': [10, 50, 100, None],
     #    'min_samples_split': [2, 10, 100],
     #    'class_weight': [None, 'balanced']
-    #}, cv=2),
+    #}, cv=5),
     #ensemble.RandomForestClassifier(random_state=42)),
     #ClassifierTunning(GridSearchCV(svm.LinearSVC(), {
     #    #'kernel': ['linear', 'rbf', 'poly', 'sigmoid'],
@@ -73,15 +73,17 @@ pipeline = Pipeline([
     #}, cv=2),
     #svm.LinearSVC(random_state=42)),
     ClassifierTunning(GridSearchCV(tree.DecisionTreeClassifier(), {
-        'criterion': ["gini", "entropy"],
-        'max_depth': [10, 60, 100, None],
-        'min_samples_split': [2, 30, 100],
-        'class_weight': [None, 'balanced']
-    }, cv=10),
-    tree.DecisionTreeClassifier(random_state=42)),
+            'criterion': ["gini", "entropy"],
+            'max_depth': [3, 5, 10, 50, 100, None],
+            'min_samples_split': [2, 5, 7, 10, 13],
+            'class_weight': [None, 'balanced'],
+            'max_features': [3, 5, 10, 13, None],
+            'min_samples_leaf': [1, 5, 10]
+        }, cv=GroupKFold(n_splits=10)),
+        tree.DecisionTreeClassifier(random_state=42), 'URL'),
     GroupKFoldCV(GroupKFold(n_splits=10), 'URL', cross_validate)
 ])
-result = pipeline.execute(open('data/classified/external-dataset.arff').read())
+result = pipeline.execute(open('data/classified/external-dataset-noblogspot.arff').read())
 print('Model: ' + str(result['model']))
 print('Features: ' + str(result['features']))
 print('X dimensions:' + str(result['X'].shape))
