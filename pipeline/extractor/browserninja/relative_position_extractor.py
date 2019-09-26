@@ -3,8 +3,6 @@ import np
 class RelativePositionExtractor(object):
 
     def execute(self, arff_data, attributes, X):
-        X_t = np.array(X).T.tolist()
-
         nrows = len(X) if len(X) > 0 else 1
 
         base_x = np.array(arff_data['data'][:, attributes.index('baseX')], dtype='float64')
@@ -31,18 +29,18 @@ class RelativePositionExtractor(object):
         target_n_sibling_x = np.array(arff_data['data'][:, attributes.index('targetNextSiblingLeft')], dtype='float64')
         target_n_sibling_y = np.array(arff_data['data'][:, attributes.index('targetNextSiblingTop')], dtype='float64')
 
-        X_t.append(np.abs((base_x - base_parent_x) - (target_x - target_parent_x)) / np.minimum(target_width, base_width))
-        X_t.append(np.abs((base_y - base_parent_y) - (target_y - target_parent_y)) / np.minimum(target_height, base_height))
+        X.append(np.abs((base_x - base_parent_x) - (target_x - target_parent_x)) / np.minimum(target_width, base_width))
+        X.append(np.abs((base_y - base_parent_y) - (target_y - target_parent_y)) / np.minimum(target_height, base_height))
 
-        X_t.append(np.abs((base_x - base_p_sibling_x) - (target_x - target_p_sibling_x)) /
+        X.append(np.abs((base_x - base_p_sibling_x) - (target_x - target_p_sibling_x)) /
                 np.minimum(target_width, base_width))
-        X_t.append(np.abs((base_y - base_p_sibling_y) - (target_y - target_p_sibling_y)) /
+        X.append(np.abs((base_y - base_p_sibling_y) - (target_y - target_p_sibling_y)) /
                 np.minimum(target_height, base_height))
 
-        X_t.append(np.abs((base_x - base_n_sibling_x) - (target_x - target_n_sibling_x)) /
+        X.append(np.abs((base_x - base_n_sibling_x) - (target_x - target_n_sibling_x)) /
                 np.minimum(target_width, base_width))
-        X_t.append(np.abs((base_y - base_n_sibling_y) - (target_y - target_n_sibling_y)) /
+        X.append(np.abs((base_y - base_n_sibling_y) - (target_y - target_n_sibling_y)) /
                 np.minimum(target_height, base_height))
 
 
-        return np.array(X_t).T.tolist()
+        return X

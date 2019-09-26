@@ -11,28 +11,29 @@ from pipeline.extractor.xbi_extractor import XBIExtractor
 from pipeline.extractor.crosscheck_extractor import CrossCheckExtractor
 from pipeline.extractor.browserninja import *
 from pipeline.extractor.browserninja.font_family_extractor import FontFamilyExtractor
+from pipeline.extractor.browserninja.relative_position_extractor import RelativePositionExtractor
 from pipeline.feature_selection import FeatureSelection
 from pipeline.classifier.classifier_tunning import ClassifierTunning
 from pipeline.model_evaluation.groupkfold_cv import GroupKFoldCV
 
 features = [
     #'URL', 'id', 'tagName',
-    'childsNumber', 'textLength',
+    #'childsNumber', 'textLength',
     #'basePlatform', 'targetPlatform', 'baseBrowser', 'targetBrowser',
-    'baseDPI', 'targetDPI',
+    #'baseDPI', 'targetDPI',
     #'baseScreenshot', 'targetScreenshot',
-    'baseX', 'targetX', 'baseY', 'targetY',
-    'baseHeight', 'targetHeight', 'baseWidth', 'targetWidth',
-    'baseParentX', 'targetParentX', 'baseParentY', 'targetParentY',
-    'imageDiff', 'chiSquared',
-    'baseDeviceWidth', 'targetDeviceWidth', 'baseViewportWidth', 'targetViewportWidth',
+    #'baseX', 'targetX', 'baseY', 'targetY',
+    #'baseHeight', 'targetHeight', 'baseWidth', 'targetWidth',
+    #'baseParentX', 'targetParentX', 'baseParentY', 'targetParentY',
+    #'imageDiff', 'chiSquared',
+    #'baseDeviceWidth', 'targetDeviceWidth', 'baseViewportWidth', 'targetViewportWidth',
     #'xpath', 'baseXpath', 'targetXpath',
-    'phash',
-    'basePreviousSiblingLeft', 'targetPreviousSiblingLeft',
-    'basePreviousSiblingTop', 'targetPreviousSiblingTop',
-    'baseNextSiblingLeft', 'targetNextSiblingLeft',
-    'baseNextSiblingTop', 'targetNextSiblingTop',
-    'baseTextNodes', 'targetTextNodes',
+    #'phash',
+    #'basePreviousSiblingLeft', 'targetPreviousSiblingLeft',
+    #'basePreviousSiblingTop', 'targetPreviousSiblingTop',
+    #'baseNextSiblingLeft', 'targetNextSiblingLeft',
+    #'baseNextSiblingTop', 'targetNextSiblingTop',
+    #'baseTextNodes', 'targetTextNodes',
     #'baseFontFamily', 'targetFontFamily'
 ]
 
@@ -44,11 +45,12 @@ pipeline = Pipeline([
     BrowserNinjaCompositeExtractor('Result',
         extractors=[
             ComplexityExtractor(),
-            ImageComparisonExtractor(),
+    #        ImageComparisonExtractor(),
             SizeViewportExtractor(),
             VisibilityExtractor(),
             PositionViewportExtractor(),
-            FontFamilyExtractor()
+    #        FontFamilyExtractor(),
+            RelativePositionExtractor()
         ]),
     #FeatureSelection(SelectKBest(f_classif, k=20)),
     #ClassifierTunning(GridSearchCV(ensemble.RandomForestClassifier(), {

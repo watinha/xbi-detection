@@ -48,7 +48,8 @@ class RelativePositionExtractorTest(TestCase):
         arff_string = """1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,1
 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,1"""
         (arff_data, attributes) = self.generate_arff(arff_string)
-        result = self.extractor.execute(arff_data, attributes, X.tolist())
+        result = self.extractor.execute(arff_data, attributes, X.T.tolist())
+        result = np.array(result).T.tolist()
         self.assertEqual(2, len(result))
         self.assertEqual(X.tolist(), (np.array(result)[0:2,0:3]).tolist())
 
@@ -57,6 +58,7 @@ class RelativePositionExtractorTest(TestCase):
         arff_string = """1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,1"""
         (arff_data, attributes) = self.generate_arff(arff_string)
         result = self.extractor.execute(arff_data, attributes, X)
+        result = np.array(result).T.tolist()
         self.assertEqual(1, len(result))
         self.assertEqual(((1 - 9) - (2 - 10)) / 7 , result[0][0])
         self.assertEqual(((3 - 11) - (4 - 12)) / 5, result[0][1])
@@ -66,6 +68,7 @@ class RelativePositionExtractorTest(TestCase):
         arff_string = """13,20,60,6,10,11,13,10,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,1"""
         (arff_data, attributes) = self.generate_arff(arff_string)
         result = self.extractor.execute(arff_data, attributes, X)
+        result = np.array(result).T.tolist()
         self.assertEqual(1, len(result))
         self.assertEqual(abs((13 - 9) - (20 - 10)) / 10, result[0][0])
         self.assertEqual(abs((60 - 11) - (6 - 12)) / 10, result[0][1])
@@ -75,6 +78,7 @@ class RelativePositionExtractorTest(TestCase):
         arff_string = """13,20,60,6,10,7,13,50,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,1"""
         (arff_data, attributes) = self.generate_arff(arff_string)
         result = self.extractor.execute(arff_data, attributes, X)
+        result = np.array(result).T.tolist()
         self.assertEqual(1, len(result))
         self.assertEqual(abs((13 - 9) - (20 - 10)) / 13, result[0][0])
         self.assertEqual(abs((60 - 11) - (6 - 12)) / 7, result[0][1])
@@ -84,6 +88,7 @@ class RelativePositionExtractorTest(TestCase):
         arff_string = """1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,1"""
         (arff_data, attributes) = self.generate_arff(arff_string)
         result = self.extractor.execute(arff_data, attributes, X)
+        result = np.array(result).T.tolist()
         self.assertEqual(1, len(result))
         self.assertEqual(((1 - 15) - (2 - 16)) / 7 , result[0][2])
         self.assertEqual(((3 - 17) - (4 - 18)) / 5, result[0][3])
@@ -93,6 +98,7 @@ class RelativePositionExtractorTest(TestCase):
         arff_string = """13,20,60,6,10,11,13,10,9,10,11,12,13,14,99,16,45,300,19,20,21,22,23,24,1"""
         (arff_data, attributes) = self.generate_arff(arff_string)
         result = self.extractor.execute(arff_data, attributes, X)
+        result = np.array(result).T.tolist()
         self.assertEqual(1, len(result))
         self.assertEqual(abs((13 - 99) - (20 - 16)) / 10, result[0][2])
         self.assertEqual(abs((60 - 45) - (6 - 300)) / 10, result[0][3])
@@ -102,6 +108,7 @@ class RelativePositionExtractorTest(TestCase):
         arff_string = """13,20,60,6,10,7,13,50,9,10,11,12,13,14,99,16,45,300,19,20,21,22,23,24,1"""
         (arff_data, attributes) = self.generate_arff(arff_string)
         result = self.extractor.execute(arff_data, attributes, X)
+        result = np.array(result).T.tolist()
         self.assertEqual(1, len(result))
         self.assertEqual(abs((13 - 99) - (20 - 16)) / 13, result[0][2])
         self.assertEqual(abs((60 - 45) - (6 - 300)) / 7, result[0][3])
@@ -111,6 +118,7 @@ class RelativePositionExtractorTest(TestCase):
         arff_string = """1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,1"""
         (arff_data, attributes) = self.generate_arff(arff_string)
         result = self.extractor.execute(arff_data, attributes, X)
+        result = np.array(result).T.tolist()
         self.assertEqual(1, len(result))
         self.assertEqual(((1 - 19) - (2 - 20)) / 7 , result[0][4])
         self.assertEqual(((3 - 21) - (4 - 22)) / 5, result[0][5])
@@ -120,6 +128,7 @@ class RelativePositionExtractorTest(TestCase):
         arff_string = """13,20,60,6,10,11,13,10,9,10,11,12,13,14,99,16,45,300,233,180,30,17,23,24,1"""
         (arff_data, attributes) = self.generate_arff(arff_string)
         result = self.extractor.execute(arff_data, attributes, X)
+        result = np.array(result).T.tolist()
         self.assertEqual(1, len(result))
         self.assertEqual(abs((13 - 233) - (20 - 180)) / 10, result[0][4])
         self.assertEqual(abs((60 - 30) - (6 - 17)) / 10, result[0][5])
@@ -129,6 +138,7 @@ class RelativePositionExtractorTest(TestCase):
         arff_string = """13,20,60,6,10,7,13,50,9,10,11,12,13,14,99,16,45,300,233,180,30,17,23,24,1"""
         (arff_data, attributes) = self.generate_arff(arff_string)
         result = self.extractor.execute(arff_data, attributes, X)
+        result = np.array(result).T.tolist()
         self.assertEqual(1, len(result))
         self.assertEqual(abs((13 - 233) - (20 - 180)) / 13, result[0][4])
         self.assertEqual(abs((60 - 30) - (6 - 17)) / 7, result[0][5])
