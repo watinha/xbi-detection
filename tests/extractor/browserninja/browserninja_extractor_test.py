@@ -167,3 +167,41 @@ class BrowserNinjaExtractorTest(TestCase):
         self.assertEqual(0.15, result['X'][1][3])
         self.assertEqual(0.25, result['X'][1][4])
         self.assertEqual(1000/(30 * 255), result['X'][1][5])
+
+    def test_execute_extracts_platform_ids_from_arff (self):
+        arff_data = arff.load("""@RELATION browserninja.website
+@ATTRIBUTE basePlatform STRING
+@ATTRIBUTE targetPlatform STRING
+@ATTRIBUTE Result {0,1}
+@DATA
+'iOS 12.1 - Safari -- iOS - iPhone 8','Android null - Chrome -- Android - MotoG4',0
+'iOS 12.1 - Safari -- iOS - iPhone 8','iOS 12.1 - Safari -- iOS - iPhone 8 Plus',1
+'iOS 12.1 - Safari -- iOS - iPhone 8','iOS 12.1 - Safari -- iOS - iPhoneSE',1
+""")
+        arff_data['data'] = np.array(arff_data['data'])
+        self.extractor = BrowserNinjaCompositeExtractor(class_attr='Result', extractors=[PlatformExtractor()])
+        result = self.extractor.execute(arff_data)
+        self.assertEqual(0, result['X'][0][0])
+        self.assertEqual(1, result['X'][1][0])
+        self.assertEqual(2, result['X'][2][0])
+
+
+    def test_execute_extracts_platform_ids_from_arff_with_non_null_parameter (self):
+        arff_data = arff.load("""@RELATION browserninja.website
+@ATTRIBUTE basePlatform STRING
+@ATTRIBUTE targetPlatform STRING
+@ATTRIBUTE Result {0,1}
+@DATA
+'iOS 12.1 - Safari -- iOS - iPhone 8','iOS 12.1 - Safari -- iOS - iPhoneSE',1
+'iOS 12.1 - Safari -- iOS - iPhone 8','iOS 12.1 - Safari -- iOS - iPhone 8 Plus',1
+'iOS 12.1 - Safari -- iOS - iPhone 8','Android null - Chrome -- Android - MotoG4',0
+'iOS 12.1 - Safari -- iOS - iPhone 8','iOS 12.1 - Safari -- iOS - iPhone 8 Plus',1
+""")
+        arff_data['data'] = np.array(arff_data['data'])
+        arff_data['X'] = np.array([ [0, 1], [1, 5], [3, 4], [9, 13] ])
+        self.extractor = BrowserNinjaCompositeExtractor(class_attr='Result', extractors=[PlatformExtractor()])
+        result = self.extractor.execute(arff_data)
+        self.assertEqual(2, result['X'][0][2])
+        self.assertEqual(1, result['X'][1][2])
+        self.assertEqual(0, result['X'][2][2])
+        self.assertEqual(1, result['X'][3][2])

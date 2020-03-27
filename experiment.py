@@ -1,6 +1,7 @@
 import random, arff
 
 from sklearn import tree, svm, ensemble
+from sklearn.neural_network import MLPClassifier
 from sklearn.feature_selection import SelectKBest, chi2, f_classif
 from sklearn.model_selection import GridSearchCV,GroupKFold,cross_validate
 from functools import reduce
@@ -18,22 +19,22 @@ from pipeline.model_evaluation.groupkfold_cv import GroupKFoldCV
 
 features = [
     #'URL', 'id', 'tagName',
-    #'childsNumber', 'textLength',
+    'childsNumber', 'textLength',
     #'basePlatform', 'targetPlatform', 'baseBrowser', 'targetBrowser',
-    #'baseDPI', 'targetDPI',
+    'baseDPI', 'targetDPI',
     #'baseScreenshot', 'targetScreenshot',
-    #'baseX', 'targetX', 'baseY', 'targetY',
-    #'baseHeight', 'targetHeight', 'baseWidth', 'targetWidth',
-    #'baseParentX', 'targetParentX', 'baseParentY', 'targetParentY',
-    #'imageDiff', 'chiSquared',
+    'baseX', 'targetX', 'baseY', 'targetY',
+    'baseHeight', 'targetHeight', 'baseWidth', 'targetWidth',
+    'baseParentX', 'targetParentX', 'baseParentY', 'targetParentY',
+    'imageDiff', 'chiSquared',
     'baseDeviceWidth', 'targetDeviceWidth', 'baseViewportWidth', 'targetViewportWidth',
     #'xpath', 'baseXpath', 'targetXpath',
-    #'phash',
-    #'basePreviousSiblingLeft', 'targetPreviousSiblingLeft',
-    #'basePreviousSiblingTop', 'targetPreviousSiblingTop',
-    #'baseNextSiblingLeft', 'targetNextSiblingLeft',
-    #'baseNextSiblingTop', 'targetNextSiblingTop',
-    #'baseTextNodes', 'targetTextNodes',
+    'phash',
+    'basePreviousSiblingLeft', 'targetPreviousSiblingLeft',
+    'basePreviousSiblingTop', 'targetPreviousSiblingTop',
+    'baseNextSiblingLeft', 'targetNextSiblingLeft',
+    'baseNextSiblingTop', 'targetNextSiblingTop',
+    'baseTextNodes', 'targetTextNodes',
     #'baseFontFamily', 'targetFontFamily'
 ]
 
@@ -45,45 +46,60 @@ pipeline = Pipeline([
     BrowserNinjaCompositeExtractor('Result',
         extractors=[
             ComplexityExtractor(),
-    #        ImageComparisonExtractor(),
+            ImageComparisonExtractor(),
             SizeViewportExtractor(),
             VisibilityExtractor(),
             PositionViewportExtractor(),
-    #        FontFamilyExtractor(),
-            RelativePositionExtractor()
+            #FontFamilyExtractor(),
+            RelativePositionExtractor(),
+            PlatformExtractor()
         ]),
-    #FeatureSelection(SelectKBest(f_classif, k=13)),
-    #ClassifierTunning(GridSearchCV(ensemble.RandomForestClassifier(), {
-    #    'n_estimators': [2, 10, 100],
-    #    'criterion': ["gini", "entropy"],
-    #    'max_depth': [10, 50, 100, None],
-    #    'min_samples_split': [2, 10, 100],
-    #    'class_weight': [None, 'balanced']
-    #}, cv=5),
-    #ensemble.RandomForestClassifier(random_state=42)),
-    #ClassifierTunning(GridSearchCV(svm.LinearSVC(), {
-    #    #'kernel': ['linear', 'rbf', 'poly', 'sigmoid'],
-    #    #'kernel': ['linear'],
-    #    'C': [1, 10, 100],
-    #    #'degree': [1, 2, 3],
-    #    #'coef0': [0, 10, 100],
-    #    'tol': [0.001, 0.1, 1],
-    #    'class_weight': ['balanced', None],
-    #    'max_iter': [30000]
-    #}, cv=2),
-    #svm.LinearSVC(random_state=42)),
-    ClassifierTunning(GridSearchCV(tree.DecisionTreeClassifier(), {
+    #FeatureSelection(SelectKBest(f_classif, k=20)),
+    ClassifierTunning(GridSearchCV(ensemble.RandomForestClassifier(), {
+            'n_estimators': [2, 5, 10, 15],
             'criterion': ["gini", "entropy"],
-            'max_depth': [3, 5, 10, 50, 100, None],
-            'min_samples_split': [2, 5, 7, 10, 13],
-            'class_weight': [None, 'balanced'],
-            'max_features': [3, 5, 10, 13, None],
-            'min_samples_leaf': [1, 5, 10]
-        }, cv=GroupKFold(n_splits=10)),
-        tree.DecisionTreeClassifier(random_state=42), 'URL'),
+            'max_depth': [10, 30, 50, 100, None],
+            'min_samples_split': [2, 3, 10, 30],
+            'min_samples_leaf': [1, 3, 5],
+            'max_features': [5, 10, 'auto'],
+            'class_weight': [None, 'balanced']
+        }, cv=GroupKFold(n_splits=3)),
+        ensemble.RandomForestClassifier(random_state=42), 'URL'),
+    #ClassifierTunning(GridSearchCV(svm.LinearSVC(), {
+    #        #'kernel': ['linear', 'rbf', 'poly', 'sigmoid'],
+    #        #'kernel': ['linear'],
+    #        'C': [1, 10, 100],
+    #        #'degree': [1, 2, 3],
+    #        #'coef0': [0, 10, 100],
+    #        'tol': [0.001, 0.1, 1],
+    #        'class_weight': ['balanced', None],
+    #        'max_iter': [2000]
+    #    }, cv=GroupKFold(n_splits=3)),
+    #    svm.LinearSVC(random_state=42), 'URL'),
+    #ClassifierTunning(GridSearchCV(tree.DecisionTreeClassifier(), {
+    #        'criterion': ["gini", "entropy"],
+    #        'max_depth': [3, 5, 20, None],
+    #        'min_samples_split': [2, 7, 13],
+    #        'class_weight': [None, 'balanced'],
+    #        #'max_features': [5, None],
+    #        'max_features': [5, 10, None],
+    #        'min_samples_leaf': [1, 5, 10]
+    #    #}, cv=5),
+    #    }, cv=GroupKFold(n_splits=3)),
+    #    tree.DecisionTreeClassifier(random_state=42), 'URL'),
+    #ClassifierTunning(GridSearchCV(MLPClassifier(), {
+    #        'hidden_layer_sizes': [5, 10, 30],
+    #        'activation': ['identity', 'logistic', 'tanh', 'relu'],
+    #        'solver': ['lbfgs', 'sgd', 'adam'],
+    #        'alpha': [0.0001, 0.01, 0.1],
+    #        'max_iter': [2000],
+    #        'learning_rate': ['constant', 'invscaling', 'adaptive'],
+    #        'random_state': [42]
+    #    }, cv=GroupKFold(n_splits=3)),
+    #    MLPClassifier(random_state=42), 'URL'),
     GroupKFoldCV(GroupKFold(n_splits=10), 'URL', cross_validate)
 ])
-result = pipeline.execute(open('data/classified/external-dataset-noblogspot.arff').read())
+result = pipeline.execute(open('data/dataset-filtered-040919-noblogspot.arff').read())
 print('Model: ' + str(result['model']))
 print('Features: ' + str(result['features']))
 print('X dimensions:' + str(result['X'].shape))

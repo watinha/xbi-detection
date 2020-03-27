@@ -1,5 +1,7 @@
 import np
 
+from sklearn.preprocessing import LabelEncoder
+
 class BrowserNinjaCompositeExtractor():
 
     def __init__(self, class_attr='Result', extractors = []):
@@ -103,3 +105,14 @@ class PositionViewportExtractor():
         target_y = np.array(arff_data['data'][:, attributes.index('targetY')], dtype='float64')
         X.append(np.abs((base_y - target_y) / np.maximum(np.abs(base_viewport - target_viewport), 1)))
         return X
+
+
+class PlatformExtractor():
+
+    def execute(self, arff_data, attributes, X):
+        encoder = LabelEncoder()
+        encoder.fit(arff_data['data'][:, attributes.index('targetPlatform')])
+        X.append(encoder.transform(arff_data['data'][:, attributes.index('targetPlatform')]))
+        return X
+
+
