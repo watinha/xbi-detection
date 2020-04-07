@@ -19,31 +19,40 @@ from pipeline.model_evaluation.groupkfold_cv import GroupKFoldCV
 
 features = [
     #'URL', 'id', 'tagName',
-    'childsNumber', 'textLength',
+    #'childsNumber', 'textLength',
     #'basePlatform', 'targetPlatform', 'baseBrowser', 'targetBrowser',
-    'baseDPI', 'targetDPI',
+    #'baseDPI', 'targetDPI',
     #'baseScreenshot', 'targetScreenshot',
-    'baseX', 'targetX', 'baseY', 'targetY',
-    'baseHeight', 'targetHeight', 'baseWidth', 'targetWidth',
-    'baseParentX', 'targetParentX', 'baseParentY', 'targetParentY',
-    'imageDiff', 'chiSquared',
-    'baseDeviceWidth', 'targetDeviceWidth', 'baseViewportWidth', 'targetViewportWidth',
+    #'baseX', 'targetX', 'baseY', 'targetY',
+    #'baseHeight', 'targetHeight', 'baseWidth', 'targetWidth',
+    #'baseParentX', 'targetParentX', 'baseParentY', 'targetParentY',
+    #'imageDiff', 'chiSquared',
+    #'baseDeviceWidth', 'targetDeviceWidth', 'baseViewportWidth', 'targetViewportWidth',
     #'xpath', 'baseXpath', 'targetXpath',
-    'phash',
-    'basePreviousSiblingLeft', 'targetPreviousSiblingLeft',
-    'basePreviousSiblingTop', 'targetPreviousSiblingTop',
-    'baseNextSiblingLeft', 'targetNextSiblingLeft',
-    'baseNextSiblingTop', 'targetNextSiblingTop',
-    'baseTextNodes', 'targetTextNodes',
-    #'baseFontFamily', 'targetFontFamily'
+    #'phash',
+    #'basePreviousSiblingLeft', 'targetPreviousSiblingLeft',
+    #'basePreviousSiblingTop', 'targetPreviousSiblingTop',
+    #'baseNextSiblingLeft', 'targetNextSiblingLeft',
+    #'baseNextSiblingTop', 'targetNextSiblingTop',
+    #'baseTextNodes', 'targetTextNodes',
+    #'baseFontFamily', 'targetFontFamily',
+    #'base_bin1', 'base_bin2', 'base_bin3', 'base_bin4', 'base_bin5',
+    #'base_bin6', 'base_bin7', 'base_bin8', 'base_bin9', 'base_bin10',
+    #'target_bin1', 'target_bin2', 'target_bin3', 'target_bin4', 'target_bin5',
+    #'target_bin6', 'target_bin7', 'target_bin8', 'target_bin9', 'target_bin10',
+    #'diff_bin01', 'diff_bin02', 'diff_bin03', 'diff_bin04', 'diff_bin05',
+    #'diff_bin11', 'diff_bin12', 'diff_bin13', 'diff_bin14', 'diff_bin15',
+    #'diff_bin21', 'diff_bin22', 'diff_bin23', 'diff_bin24', 'diff_bin25',
+    #'diff_bin31', 'diff_bin32', 'diff_bin33', 'diff_bin34', 'diff_bin35',
+    #'diff_bin41', 'diff_bin42', 'diff_bin43', 'diff_bin44', 'diff_bin45'
 ]
 
 random.seed(42)
 pipeline = Pipeline([
     ArffLoader(),
-    #XBIExtractor(features, 'Result'),
-    #CrossCheckExtractor('Result'),
-    BrowserNinjaCompositeExtractor('Result',
+    #XBIExtractor(features, 'internal'),
+    #CrossCheckExtractor('internal'),
+    BrowserNinjaCompositeExtractor('internal',
         extractors=[
             ComplexityExtractor(),
             ImageComparisonExtractor(),
@@ -54,13 +63,13 @@ pipeline = Pipeline([
             RelativePositionExtractor(),
             PlatformExtractor()
         ]),
-    #FeatureSelection(SelectKBest(f_classif, k=20)),
+    #FeatureSelection(SelectKBest(f_classif, k=12)),
     ClassifierTunning(GridSearchCV(ensemble.RandomForestClassifier(), {
             'n_estimators': [2, 5, 10, 15],
             'criterion': ["gini", "entropy"],
-            'max_depth': [10, 30, 50, 100, None],
-            'min_samples_split': [2, 3, 10, 30],
-            'min_samples_leaf': [1, 3, 5],
+            'max_depth': [5, 10, None], #'max_depth': [5, 10, 30, 50, None],
+            'min_samples_split': [1, 10, 30], #'min_samples_split': [2, 3, 10, 30],
+            'min_samples_leaf': [1, 5, 10],
             'max_features': [5, 10, 'auto'],
             'class_weight': [None, 'balanced']
         }, cv=GroupKFold(n_splits=3)),
@@ -78,11 +87,11 @@ pipeline = Pipeline([
     #    svm.LinearSVC(random_state=42), 'URL'),
     #ClassifierTunning(GridSearchCV(tree.DecisionTreeClassifier(), {
     #        'criterion': ["gini", "entropy"],
-    #        'max_depth': [3, 5, 20, None],
-    #        'min_samples_split': [2, 7, 13],
+    #        'max_depth': [5, 10, None],
+    #        'min_samples_split': [10, 30, 50],
     #        'class_weight': [None, 'balanced'],
     #        #'max_features': [5, None],
-    #        'max_features': [5, 10, None],
+    #        #'max_features': [5, 10, None],
     #        'min_samples_leaf': [1, 5, 10]
     #    #}, cv=5),
     #    }, cv=GroupKFold(n_splits=3)),
@@ -99,7 +108,7 @@ pipeline = Pipeline([
     #    MLPClassifier(random_state=42), 'URL'),
     GroupKFoldCV(GroupKFold(n_splits=10), 'URL', cross_validate)
 ])
-result = pipeline.execute(open('data/dataset-filtered-040919-noblogspot.arff').read())
+result = pipeline.execute(open('data/07042020/07042020-dataset.binary.hist.arff').read())
 print('Model: ' + str(result['model']))
 print('Features: ' + str(result['features']))
 print('X dimensions:' + str(result['X'].shape))
