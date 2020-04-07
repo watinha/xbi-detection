@@ -88,13 +88,13 @@ class BrowserbiteExtractorTest(TestCase):
 @ATTRIBUTE target_bin8 NUMERIC
 @ATTRIBUTE target_bin9 NUMERIC
 @ATTRIBUTE target_bin10 NUMERIC
-@ATTRIBUTE xbi {0,1}
+@ATTRIBUTE internal {0,1}
 @DATA
 1,2,3,4,5,6,7,8,77,78,79,70,71,72,73,74,75,76,90,90,90,90,90,90,90,90,90,90,0
 3,6,2,5,1,4,6,9,70,71,72,71,72,80,90,74,75,76,90,9,90,90,90,90,90,90,90,90,0
 10,12,12,14,14,16,16,33,77,78,79,70,71,72,73,74,75,76,90,90,90,90,90,90,90,90,90,90,1""")
         arff_data['data'] = np.array(arff_data['data'])
-        extractor = BrowserbiteExtractor(class_attr='xbi')
+        extractor = BrowserbiteExtractor(class_attr='internal')
         result = extractor.execute(arff_data)
         self.assertEqual(3, len(result['X']))
         np.testing.assert_almost_equal(

@@ -48,5 +48,5 @@ class BrowserbiteExtractor ():
         X_t.append(np.array(data[:, attributes.index('target_bin10')]))
 
         arff_dataset['X'] = np.array(X_t, dtype='float64').T
-        arff_dataset['y'] = np.array(data[:, attributes.index('xbi')], dtype='float64')
+        arff_dataset['y'] = np.array(data[:, attributes.index(self._class_attr)], dtype='float64')
         return arff_dataset
