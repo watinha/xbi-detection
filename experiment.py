@@ -1,4 +1,4 @@
-import random, arff
+import random, arff, sys
 
 from sklearn import tree, svm, ensemble
 from sklearn.neural_network import MLPClassifier
@@ -10,6 +10,7 @@ from pipeline import Pipeline
 from pipeline.loader.arff_loader import ArffLoader
 from pipeline.extractor.xbi_extractor import XBIExtractor
 from pipeline.extractor.crosscheck_extractor import CrossCheckExtractor
+from pipeline.extractor.browserbite_extractor import BrowserbiteExtractor
 from pipeline.extractor.browserninja import *
 from pipeline.extractor.browserninja.font_family_extractor import FontFamilyExtractor
 from pipeline.extractor.browserninja.relative_position_extractor import RelativePositionExtractor
@@ -40,18 +41,19 @@ features = [
     #'base_bin6', 'base_bin7', 'base_bin8', 'base_bin9', 'base_bin10',
     #'target_bin1', 'target_bin2', 'target_bin3', 'target_bin4', 'target_bin5',
     #'target_bin6', 'target_bin7', 'target_bin8', 'target_bin9', 'target_bin10',
-    #'diff_bin01', 'diff_bin02', 'diff_bin03', 'diff_bin04', 'diff_bin05',
-    #'diff_bin11', 'diff_bin12', 'diff_bin13', 'diff_bin14', 'diff_bin15',
-    #'diff_bin21', 'diff_bin22', 'diff_bin23', 'diff_bin24', 'diff_bin25',
-    #'diff_bin31', 'diff_bin32', 'diff_bin33', 'diff_bin34', 'diff_bin35',
-    #'diff_bin41', 'diff_bin42', 'diff_bin43', 'diff_bin44', 'diff_bin45'
+    'diff_bin01', 'diff_bin02', 'diff_bin03', 'diff_bin04', 'diff_bin05',
+    'diff_bin11', 'diff_bin12', 'diff_bin13', 'diff_bin14', 'diff_bin15',
+    'diff_bin21', 'diff_bin22', 'diff_bin23', 'diff_bin24', 'diff_bin25',
+    'diff_bin31', 'diff_bin32', 'diff_bin33', 'diff_bin34', 'diff_bin35',
+    'diff_bin41', 'diff_bin42', 'diff_bin43', 'diff_bin44', 'diff_bin45'
 ]
 
 random.seed(42)
 pipeline = Pipeline([
     ArffLoader(),
-    #XBIExtractor(features, 'internal'),
+    XBIExtractor(features, 'internal'),
     #CrossCheckExtractor('internal'),
+    #BrowserbiteExtractor('internal'),
     BrowserNinjaCompositeExtractor('internal',
         extractors=[
             ComplexityExtractor(),
@@ -64,16 +66,16 @@ pipeline = Pipeline([
             PlatformExtractor()
         ]),
     #FeatureSelection(SelectKBest(f_classif, k=12)),
-    ClassifierTunning(GridSearchCV(ensemble.RandomForestClassifier(), {
-            'n_estimators': [2, 5, 10, 15],
-            'criterion': ["gini", "entropy"],
-            'max_depth': [5, 10, None], #'max_depth': [5, 10, 30, 50, None],
-            'min_samples_split': [1, 10, 30], #'min_samples_split': [2, 3, 10, 30],
-            'min_samples_leaf': [1, 5, 10],
-            'max_features': [5, 10, 'auto'],
-            'class_weight': [None, 'balanced']
-        }, cv=GroupKFold(n_splits=3)),
-        ensemble.RandomForestClassifier(random_state=42), 'URL'),
+    #ClassifierTunning(GridSearchCV(ensemble.RandomForestClassifier(), {
+    #        'n_estimators': [2, 5, 10, 15],
+    #        'criterion': ["gini", "entropy"],
+    #        'max_depth': [5, 10, None], #'max_depth': [5, 10, 30, 50, None],
+    #        'min_samples_split': [1, 10, 30], #'min_samples_split': [2, 3, 10, 30],
+    #        'min_samples_leaf': [1, 5, 10],
+    #        'max_features': [5, 10, 'auto'],
+    #        'class_weight': [None, 'balanced']
+    #    }, cv=GroupKFold(n_splits=3)),
+    #    ensemble.RandomForestClassifier(random_state=42), 'URL'),
     #ClassifierTunning(GridSearchCV(svm.LinearSVC(), {
     #        #'kernel': ['linear', 'rbf', 'poly', 'sigmoid'],
     #        #'kernel': ['linear'],
@@ -96,16 +98,16 @@ pipeline = Pipeline([
     #    #}, cv=5),
     #    }, cv=GroupKFold(n_splits=3)),
     #    tree.DecisionTreeClassifier(random_state=42), 'URL'),
-    #ClassifierTunning(GridSearchCV(MLPClassifier(), {
-    #        'hidden_layer_sizes': [5, 10, 30],
-    #        'activation': ['identity', 'logistic', 'tanh', 'relu'],
-    #        'solver': ['lbfgs', 'sgd', 'adam'],
-    #        'alpha': [0.0001, 0.01, 0.1],
-    #        'max_iter': [2000],
-    #        'learning_rate': ['constant', 'invscaling', 'adaptive'],
-    #        'random_state': [42]
-    #    }, cv=GroupKFold(n_splits=3)),
-    #    MLPClassifier(random_state=42), 'URL'),
+    ClassifierTunning(GridSearchCV(MLPClassifier(), {
+            'hidden_layer_sizes': [5, 10, 30],
+            'activation': ['identity', 'logistic', 'tanh', 'relu'],
+            'solver': ['lbfgs', 'sgd', 'adam'],
+            'alpha': [0.0001, 0.01, 0.1],
+            'max_iter': [2000],
+            'learning_rate': ['constant', 'invscaling', 'adaptive'],
+            'random_state': [42]
+        }, cv=GroupKFold(n_splits=3)),
+        MLPClassifier(random_state=42), 'URL'),
     GroupKFoldCV(GroupKFold(n_splits=10), 'URL', cross_validate)
 ])
 result = pipeline.execute(open('data/07042020/07042020-dataset.binary.hist.arff').read())
