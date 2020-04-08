@@ -1,5 +1,7 @@
 import np
 
+from pipeline.extractor.browserninja import PlatformExtractor
+
 class BrowserbiteExtractor ():
     def __init__ (self, class_attr):
         self._class_attr = class_attr
@@ -46,6 +48,8 @@ class BrowserbiteExtractor ():
         X_t.append(np.array(data[:, attributes.index('target_bin8')]))
         X_t.append(np.array(data[:, attributes.index('target_bin9')]))
         X_t.append(np.array(data[:, attributes.index('target_bin10')]))
+
+        (PlatformExtractor()).execute(arff_dataset, attributes, X_t)
 
         arff_dataset['X'] = np.array(X_t, dtype='float64').T
         arff_dataset['y'] = np.array(data[:, attributes.index(self._class_attr)], dtype='float64')
