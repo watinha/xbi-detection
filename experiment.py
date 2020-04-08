@@ -66,27 +66,27 @@ pipeline = Pipeline([
             PlatformExtractor()
         ]),
     #FeatureSelection(SelectKBest(f_classif, k=12)),
-    #ClassifierTunning(GridSearchCV(ensemble.RandomForestClassifier(), {
-    #        'n_estimators': [2, 5, 10, 15],
-    #        'criterion': ["gini", "entropy"],
-    #        'max_depth': [5, 10, None], #'max_depth': [5, 10, 30, 50, None],
-    #        'min_samples_split': [1, 10, 30], #'min_samples_split': [2, 3, 10, 30],
-    #        'min_samples_leaf': [1, 5, 10],
-    #        'max_features': [5, 10, 'auto'],
-    #        'class_weight': [None, 'balanced']
-    #    }, cv=GroupKFold(n_splits=3)),
-    #    ensemble.RandomForestClassifier(random_state=42), 'URL'),
-    #ClassifierTunning(GridSearchCV(svm.LinearSVC(), {
-    #        #'kernel': ['linear', 'rbf', 'poly', 'sigmoid'],
+    ClassifierTunning(GridSearchCV(ensemble.RandomForestClassifier(), {
+            'n_estimators': [2, 5, 10, 15],
+            'criterion': ["gini", "entropy"],
+            'max_depth': [5, 10, None], #'max_depth': [5, 10, 30, 50, None],
+            'min_samples_split': [3, 10, 30], #'min_samples_split': [2, 3, 10, 30],
+            'min_samples_leaf': [1, 5, 10],
+            'max_features': [5, 10, 'auto'],
+            'class_weight': [None, 'balanced']
+        }, cv=GroupKFold(n_splits=3)),
+        ensemble.RandomForestClassifier(random_state=42), 'URL'),
+    #ClassifierTunning(GridSearchCV(svm.SVC(), {
+    #        'kernel': ['linear', 'rbf', 'poly', 'sigmoid'],
     #        #'kernel': ['linear'],
     #        'C': [1, 10, 100],
-    #        #'degree': [1, 2, 3],
-    #        #'coef0': [0, 10, 100],
+    #        'degree': [1, 2, 3],
+    #        'coef0': [0, 10, 100],
     #        'tol': [0.001, 0.1, 1],
     #        'class_weight': ['balanced', None],
     #        'max_iter': [2000]
     #    }, cv=GroupKFold(n_splits=3)),
-    #    svm.LinearSVC(random_state=42), 'URL'),
+    #    svm.SVC(random_state=42), 'URL'),
     #ClassifierTunning(GridSearchCV(tree.DecisionTreeClassifier(), {
     #        'criterion': ["gini", "entropy"],
     #        'max_depth': [5, 10, None],
@@ -98,16 +98,16 @@ pipeline = Pipeline([
     #    #}, cv=5),
     #    }, cv=GroupKFold(n_splits=3)),
     #    tree.DecisionTreeClassifier(random_state=42), 'URL'),
-    ClassifierTunning(GridSearchCV(MLPClassifier(), {
-            'hidden_layer_sizes': [5, 10, 30],
-            'activation': ['identity', 'logistic', 'tanh', 'relu'],
-            'solver': ['lbfgs', 'sgd', 'adam'],
-            'alpha': [0.0001, 0.01, 0.1],
-            'max_iter': [2000],
-            'learning_rate': ['constant', 'invscaling', 'adaptive'],
-            'random_state': [42]
-        }, cv=GroupKFold(n_splits=3)),
-        MLPClassifier(random_state=42), 'URL'),
+    #ClassifierTunning(GridSearchCV(MLPClassifier(), {
+    #        'hidden_layer_sizes': [5, 10, 30],
+    #        'activation': ['identity', 'logistic', 'tanh', 'relu'],
+    #        'solver': ['lbfgs', 'sgd', 'adam'],
+    #        'alpha': [0.0001, 0.01, 0.1],
+    #        'max_iter': [2000],
+    #        'learning_rate': ['constant', 'invscaling', 'adaptive'],
+    #        'random_state': [42]
+    #    }, cv=GroupKFold(n_splits=3)),
+    #    MLPClassifier(random_state=42), 'URL'),
     GroupKFoldCV(GroupKFold(n_splits=10), 'URL', cross_validate)
 ])
 result = pipeline.execute(open('data/07042020/07042020-dataset.binary.hist.arff').read())

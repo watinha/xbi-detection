@@ -18,41 +18,50 @@ from pipeline.feature_selection import FeatureSelection
 from pipeline.classifier.classifier_tunning import ClassifierTunning
 from pipeline.model_evaluation.groupkfold_cv import GroupKFoldCV
 
-assert len(sys.argv) == 4, 'The script accepts 3 parameters: feature extractor (browserbite|crosscheck|browserninja), classifier (randomforest|svm|dt|nn) and type of xbi (internal|external)'
+assert len(sys.argv) == 4, 'The script accepts 3 parameters: feature extractor (browserbite|crosscheck|browserninja1|browserninja2), classifier (randomforest|svm|dt|nn) and type of xbi (internal|external)'
 
 class_attr = sys.argv[3]
 
 extractor = None
 if sys.argv[1] == 'browserbite':
     extractor = BrowserbiteExtractor(class_attr)
-else if sys.argv[1] == 'crosscheck':
+elif sys.argv[1] == 'crosscheck':
     extractor = CrossCheckExtractor(class_attr)
-else:
-    extractor = BrowserNinjaCompositeExtractor('internal',
+elif sys.argv[1] == 'browserninja1':
+    extractor = BrowserNinjaCompositeExtractor(class_attr,
         extractors=[
             ComplexityExtractor(),
             ImageComparisonExtractor(),
             SizeViewportExtractor(),
             VisibilityExtractor(),
             PositionViewportExtractor(),
-            #FontFamilyExtractor(),
+        ])
+
+else:
+    extractor = BrowserNinjaCompositeExtractor(class_attr,
+        extractors=[
+            ComplexityExtractor(),
+            ImageComparisonExtractor(),
+            SizeViewportExtractor(),
+            VisibilityExtractor(),
+            PositionViewportExtractor(),
             RelativePositionExtractor(),
             PlatformExtractor()
         ])
 
 classifier = None
-if sys.argv[1] == 'randomforest':
+if sys.argv[2] == 'randomforest':
     classifier = ClassifierTunning(GridSearchCV(ensemble.RandomForestClassifier(), {
             'n_estimators': [2, 5, 10, 15],
             'criterion': ["gini", "entropy"],
             'max_depth': [5, 10, None], #'max_depth': [5, 10, 30, 50, None],
-            'min_samples_split': [1, 10, 30], #'min_samples_split': [2, 3, 10, 30],
+            'min_samples_split': [3, 10, 30], #'min_samples_split': [2, 3, 10, 30],
             'min_samples_leaf': [1, 5, 10],
             'max_features': [5, 10, 'auto'],
             'class_weight': [None, 'balanced']
         }, cv=GroupKFold(n_splits=3)),
-        ensemble.RandomForestClassifier(random_state=42), 'URL'),
-else if sys.argv[1] == 'svm':
+        ensemble.RandomForestClassifier(random_state=42), 'URL')
+elif sys.argv[2] == 'svm':
     classifier = ClassifierTunning(GridSearchCV(svm.LinearSVC(), {
             #'kernel': ['linear', 'rbf', 'poly', 'sigmoid'],
             #'kernel': ['linear'],
@@ -63,8 +72,8 @@ else if sys.argv[1] == 'svm':
             'class_weight': ['balanced', None],
             'max_iter': [2000]
         }, cv=GroupKFold(n_splits=3)),
-        svm.LinearSVC(random_state=42), 'URL'),
-else if sys.argv[1] == 'dt':
+        svm.LinearSVC(random_state=42), 'URL')
+elif sys.argv[2] == 'dt':
     classifier = ClassifierTunning(GridSearchCV(tree.DecisionTreeClassifier(), {
             'criterion': ["gini", "entropy"],
             'max_depth': [5, 10, None],
@@ -75,7 +84,7 @@ else if sys.argv[1] == 'dt':
             'min_samples_leaf': [1, 5, 10]
         #}, cv=5),
         }, cv=GroupKFold(n_splits=3)),
-        tree.DecisionTreeClassifier(random_state=42), 'URL'),
+        tree.DecisionTreeClassifier(random_state=42), 'URL')
 else:
     classifier = ClassifierTunning(GridSearchCV(MLPClassifier(), {
             'hidden_layer_sizes': [5, 10, 30],
@@ -86,7 +95,7 @@ else:
             'learning_rate': ['constant', 'invscaling', 'adaptive'],
             'random_state': [42]
         }, cv=GroupKFold(n_splits=3)),
-        MLPClassifier(random_state=42), 'URL'),
+        MLPClassifier(random_state=42), 'URL')
 
 pipeline = Pipeline([
     ArffLoader(), extractor, classifier,
@@ -102,3 +111,7 @@ print('Trainning F1: %f' % (reduce(lambda x,y: x+y, result['score']['train_f1_ma
 print('Test      F1: %f' % (reduce(lambda x,y: x+y, result['score']['test_f1_macro']) / 10))
 print('Test      Precision: ' + str(result['score']['test_precision_macro']))
 print('Test      Recall: ' + str(result['score']['test_recall_macro']))
+if sys.argv[2] == 'dt' or sys.argv[2] == 'randomforest':
+    result['model'].fit(result['X'], result['y'])
+    for i in range(len(result['features'])):
+        print('%s: %f' % (result['features'][i], result['model'].feature_importances_[i]))
