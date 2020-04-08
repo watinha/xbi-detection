@@ -9,11 +9,7 @@ class BrowserNinjaCompositeExtractor():
         self._class_attr = class_attr
 
     def execute(self, arff_data):
-        arff_data['features'] = ['childsNumber', 'textLength', 'area',
-                          'phash', 'chiSquared', 'imageDiff',
-                          'width_comp', 'height_comp',
-                          'left_visibility', 'right_visibility',
-                          'left_comp', 'right_comp', 'y_comp']
+        arff_data['features'] = []
 
         attributes = [ attribute[0]
                 for attribute in arff_data['attributes'] ]
@@ -39,6 +35,7 @@ class ComplexityExtractor():
         base_height = np.array(arff_data['data'][:, attributes.index('baseHeight')], dtype='float64')
         target_height = np.array(arff_data['data'][:, attributes.index('targetHeight')], dtype='float64')
         X.append(np.maximum(base_width * base_height, target_width * target_height))
+        arff_data['features'] = arff_data['features'] + ['childsNumber', 'textLength', 'area']
         return X
 
 
@@ -55,6 +52,7 @@ class ImageComparisonExtractor():
         target_height = np.array(arff_data['data'][:, attributes.index('targetHeight')], dtype='float64')
         min_area = np.minimum(base_width * base_height, target_width * target_height)
         X.append(image_diff / (np.maximum(min_area, 1) * 255))
+        arff_data['features'] = arff_data['features'] + ['phash', 'chiSquared', 'imageDiff']
         return X
 
 
@@ -69,6 +67,7 @@ class SizeViewportExtractor():
         target_viewport = np.array(arff_data['data'][:, attributes.index('targetViewportWidth')], dtype='float64')
         X.append(np.abs((base_width - target_width)/np.maximum(np.abs(base_viewport - target_viewport), 1)))
         X.append(np.abs((base_height - target_height)/np.maximum(np.maximum(base_height, target_height), 1)))
+        arff_data['features'] = arff_data['features'] + ['width_comp', 'height_comp']
         return X
 
 
@@ -85,6 +84,7 @@ class VisibilityExtractor():
         target_right = np.array(target_viewport - (target_left + target_width), dtype='float64')
         X.append((base_right - base_viewport) - (target_right - target_viewport))
         X.append((base_left - base_viewport) - (target_left - target_viewport))
+        arff_data['features'] = arff_data['features'] + ['left_visibility', 'right_visibility']
         return X
 
 
@@ -104,6 +104,7 @@ class PositionViewportExtractor():
         base_y = np.array(arff_data['data'][:, attributes.index('baseY')], dtype='float64')
         target_y = np.array(arff_data['data'][:, attributes.index('targetY')], dtype='float64')
         X.append(np.abs((base_y - target_y) / np.maximum(np.abs(base_viewport - target_viewport), 1)))
+        arff_data['features'] = arff_data['features'] + ['left_comp', 'right_comp', 'y_comp']
         return X
 
 
@@ -113,6 +114,7 @@ class PlatformExtractor():
         encoder = LabelEncoder()
         encoder.fit(arff_data['data'][:, attributes.index('targetPlatform')])
         X.append(encoder.transform(arff_data['data'][:, attributes.index('targetPlatform')]))
+        arff_data['features'] = arff_data['features'] + ['platform_id']
         return X
 
 

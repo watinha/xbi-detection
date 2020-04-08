@@ -42,5 +42,8 @@ class RelativePositionExtractor(object):
         X.append(np.abs((base_y - base_n_sibling_y) - (target_y - target_n_sibling_y)) /
                 np.minimum(target_height, base_height))
 
+        arff_data['features'] = arff_data['features'] + ['parent_x', 'parent_y',
+                                 'previous_sibling_x', 'previous_sibling_y',
+                                 'next_sibling_x', 'next_sibling_y']
 
         return X

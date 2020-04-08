@@ -38,6 +38,7 @@ class RelativePositionExtractorTest(TestCase):
         arff_data = arff.load(arff_header + data)
         attributes = [ attribute[0] for attribute in arff_data['attributes'] ]
         arff_data['data'] = np.array(arff_data['data'])
+        arff_data['features'] = []
         return (arff_data, attributes)
 
     def setUp(self):
@@ -143,6 +144,24 @@ class RelativePositionExtractorTest(TestCase):
         self.assertEqual(abs((13 - 233) - (20 - 180)) / 13, result[0][4])
         self.assertEqual(abs((60 - 30) - (6 - 17)) / 7, result[0][5])
 
+    def test_execute_includes_the_features_names_in_arff_data (self):
+        X = []
+        arff_string = """13,20,60,6,10,7,13,50,9,10,11,12,13,14,99,16,45,300,233,180,30,17,23,24,1"""
+        (arff_data, attributes) = self.generate_arff(arff_string)
+        result = self.extractor.execute(arff_data, attributes, X)
+        result = np.array(result).T.tolist()
+        self.assertEqual(1, len(result))
+        self.assertEqual(['parent_x', 'parent_y', 'previous_sibling_x', 'previous_sibling_y',
+                          'next_sibling_x', 'next_sibling_y'], arff_data['features'])
 
-
-
+    def test_execute_includes_the_features_names_in_arff_data_with_other_extractors (self):
+        X = []
+        arff_string = """13,20,60,6,10,7,13,50,9,10,11,12,13,14,99,16,45,300,233,180,30,17,23,24,1"""
+        (arff_data, attributes) = self.generate_arff(arff_string)
+        arff_data['features'] = ['other_features', 'another']
+        result = self.extractor.execute(arff_data, attributes, X)
+        result = np.array(result).T.tolist()
+        self.assertEqual(1, len(result))
+        self.assertEqual(['other_features', 'another', 'parent_x', 'parent_y',
+                          'previous_sibling_x', 'previous_sibling_y',
+                          'next_sibling_x', 'next_sibling_y'], arff_data['features'])
