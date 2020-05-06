@@ -123,7 +123,7 @@ else:
             'activation': ['identity', 'logistic', 'tanh', 'relu'],
             'solver': ['lbfgs', 'sgd', 'adam'],
             'alpha': [0.0001, 0.01, 0.1],
-            'max_iter': [200],
+            'max_iter': [1000],
             'learning_rate': ['constant', 'invscaling', 'adaptive'],
             'random_state': [42]
         }, cv=GroupKFold(n_splits=3)),
@@ -136,7 +136,7 @@ pipeline = Pipeline([
 result = pipeline.execute(open('data/07042020/07042020-dataset.binary.hist.arff').read())
 print('Model: ' + str(result['model']))
 print('Features: ' + str(result['features']))
-print('K: ' + str(i))
+print('K: ' + str(k))
 print('X dimensions:' + str(result['X'].shape))
 print('Trainning F1: ' + str(result['score']['train_f1_macro']))
 print('Test      F1: ' + str(result['score']['test_f1_macro']))
@@ -144,7 +144,7 @@ print('Trainning F1: %f' % (reduce(lambda x,y: x+y, result['score']['train_f1_ma
 print('Test      F1: %f' % (reduce(lambda x,y: x+y, result['score']['test_f1_macro']) / 10))
 print('Test      Precision: ' + str(result['score']['test_precision_macro']))
 print('Test      Recall: ' + str(result['score']['test_recall_macro']))
-if i == 300 and (sys.argv[2] == 'dt' or sys.argv[2] == 'randomforest'):
+if k == 300 and (sys.argv[2] == 'dt' or sys.argv[2] == 'randomforest'):
     result['model'].fit(result['X'], result['y'])
     for i in range(len(result['features'])):
         print('%s: %f' % (result['features'][i], result['model'].feature_importances_[i]))
