@@ -123,7 +123,7 @@ else:
             'activation': ['identity', 'logistic', 'tanh', 'relu'],
             'solver': ['lbfgs', 'sgd', 'adam'],
             'alpha': [0.0001, 0.01, 0.1],
-            'max_iter': [1000],
+            'max_iter': [200],
             'learning_rate': ['constant', 'invscaling', 'adaptive'],
             'random_state': [42]
         }, cv=GroupKFold(n_splits=3)),
