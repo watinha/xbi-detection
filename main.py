@@ -18,9 +18,10 @@ from pipeline.feature_selection import FeatureSelection
 from pipeline.classifier.classifier_tunning import ClassifierTunning
 from pipeline.model_evaluation.groupkfold_cv import GroupKFoldCV
 
-assert len(sys.argv) == 4, 'The script accepts 3 parameters: feature extractor (browserbite|crosscheck|browserninja1|browserninja2), classifier (randomforest|svm|dt|nn) and type of xbi (internal|external)'
+assert len(sys.argv) == 5, 'The script accepts 3 parameters: feature extractor (browserbite|crosscheck|browserninja1|browserninja2), classifier (randomforest|svm|dt|nn), type of xbi (internal|external) and K value'
 
 class_attr = sys.argv[3]
+k = int(sys.argv[4])
 
 extractor = None
 if sys.argv[1] == 'browserbite':
@@ -122,29 +123,28 @@ else:
             'activation': ['identity', 'logistic', 'tanh', 'relu'],
             'solver': ['lbfgs', 'sgd', 'adam'],
             'alpha': [0.0001, 0.01, 0.1],
-            'max_iter': [2000],
+            'max_iter': [1000],
             'learning_rate': ['constant', 'invscaling', 'adaptive'],
             'random_state': [42]
         }, cv=GroupKFold(n_splits=3)),
         MLPClassifier(random_state=42), 'URL')
 
-for i in [3, 5, 10, 20, 300]:
-    selector = FeatureSelection(SelectKBest(f_classif, k=i))
-    pipeline = Pipeline([
-        ArffLoader(), extractor, classifier,
-        GroupKFoldCV(GroupKFold(n_splits=10), 'URL', cross_validate)])
-    result = pipeline.execute(open('data/07042020/07042020-dataset.binary.hist.arff').read())
-    print('Model: ' + str(result['model']))
-    print('Features: ' + str(result['features']))
-    print('K: ' + str(i))
-    print('X dimensions:' + str(result['X'].shape))
-    print('Trainning F1: ' + str(result['score']['train_f1_macro']))
-    print('Test      F1: ' + str(result['score']['test_f1_macro']))
-    print('Trainning F1: %f' % (reduce(lambda x,y: x+y, result['score']['train_f1_macro']) / 10))
-    print('Test      F1: %f' % (reduce(lambda x,y: x+y, result['score']['test_f1_macro']) / 10))
-    print('Test      Precision: ' + str(result['score']['test_precision_macro']))
-    print('Test      Recall: ' + str(result['score']['test_recall_macro']))
-    if i == 300 and (sys.argv[2] == 'dt' or sys.argv[2] == 'randomforest'):
-        result['model'].fit(result['X'], result['y'])
-        for i in range(len(result['features'])):
-            print('%s: %f' % (result['features'][i], result['model'].feature_importances_[i]))
+selector = FeatureSelection(SelectKBest(f_classif, k=k))
+pipeline = Pipeline([
+    ArffLoader(), extractor, classifier,
+    GroupKFoldCV(GroupKFold(n_splits=10), 'URL', cross_validate)])
+result = pipeline.execute(open('data/07042020/07042020-dataset.binary.hist.arff').read())
+print('Model: ' + str(result['model']))
+print('Features: ' + str(result['features']))
+print('K: ' + str(i))
+print('X dimensions:' + str(result['X'].shape))
+print('Trainning F1: ' + str(result['score']['train_f1_macro']))
+print('Test      F1: ' + str(result['score']['test_f1_macro']))
+print('Trainning F1: %f' % (reduce(lambda x,y: x+y, result['score']['train_f1_macro']) / 10))
+print('Test      F1: %f' % (reduce(lambda x,y: x+y, result['score']['test_f1_macro']) / 10))
+print('Test      Precision: ' + str(result['score']['test_precision_macro']))
+print('Test      Recall: ' + str(result['score']['test_recall_macro']))
+if i == 300 and (sys.argv[2] == 'dt' or sys.argv[2] == 'randomforest'):
+    result['model'].fit(result['X'], result['y'])
+    for i in range(len(result['features'])):
+        print('%s: %f' % (result['features'][i], result['model'].feature_importances_[i]))
