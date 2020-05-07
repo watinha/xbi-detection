@@ -131,7 +131,7 @@ else:
         MLPClassifier(random_state=42), 'URL')
 
 preprocessor = Preprocessor()
-selector = FeatureSelection(SelectKBest(f_classif, k=k))
+selector = FeatureSelection(SelectKBest(f_classif, k=k), k=k)
 pipeline = Pipeline([
     ArffLoader(), extractor, preprocessor, selector, classifier,
     GroupKFoldCV(GroupKFold(n_splits=10), 'URL', cross_validate)])

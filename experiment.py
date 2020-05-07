@@ -67,7 +67,7 @@ pipeline = Pipeline([
             PlatformExtractor()
         ]),
     Preprocessor(),
-    FeatureSelection(SelectKBest(f_classif, k=8)),
+    FeatureSelection(SelectKBest(f_classif, k=8), k=8),
     #ClassifierTunning(GridSearchCV(ensemble.RandomForestClassifier(), {
     #        'n_estimators': [2, 5, 10, 15],
     #        'criterion': ["gini", "entropy"],
