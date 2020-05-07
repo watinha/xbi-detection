@@ -86,17 +86,17 @@ if sys.argv[2] == 'randomforest':
             }, cv=GroupKFold(n_splits=3)),
             ensemble.RandomForestClassifier(random_state=42), 'URL')
 elif sys.argv[2] == 'svm':
-    classifier = ClassifierTunning(GridSearchCV(svm.LinearSVC(), {
-            #'kernel': ['linear', 'rbf', 'poly', 'sigmoid'],
+    classifier = ClassifierTunning(GridSearchCV(svm.SVC(), {
+            'kernel': ['linear', 'rbf', 'poly', 'sigmoid'],
             #'kernel': ['linear'],
             'C': [1, 10, 100],
-            #'degree': [1, 2, 3],
-            #'coef0': [0, 10, 100],
+            'degree': [1, 2, 3],
+            'coef0': [0, 10, 100],
             'tol': [0.001, 0.1, 1],
             'class_weight': ['balanced', None],
             'max_iter': [1000]
         }, cv=GroupKFold(n_splits=3)),
-        svm.LinearSVC(random_state=42), 'URL')
+        svm.SVC(random_state=42), 'URL')
 elif sys.argv[2] == 'dt':
     if sys.argv[1] == 'crosscheck':
         classifier = ClassifierTunning(GridSearchCV(tree.DecisionTreeClassifier(), {
@@ -140,9 +140,7 @@ print('Model: ' + str(result['model']))
 print('Features: ' + str(result['features']))
 print('K: ' + str(k))
 print('X dimensions:' + str(result['X'].shape))
-print('Trainning F1: ' + str(result['score']['train_f1']))
 print('Test      F1: ' + str(result['score']['test_f1']))
-print('Trainning F1: %f' % (reduce(lambda x,y: x+y, result['score']['train_f1']) / 10))
 print('Test      F1: %f' % (reduce(lambda x,y: x+y, result['score']['test_f1']) / 10))
 print('Test      Precision: ' + str(result['score']['test_precision']))
 print('Test      Recall: ' + str(result['score']['test_recall']))
