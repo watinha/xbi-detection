@@ -9,6 +9,6 @@ class GroupKFoldCV():
         attributes = [ attribute[0] for attribute in args['attributes'] ]
         groups = list(args['data'][:,attributes.index(self._group_attr)])
 
-        args['score'] = self._cross_val_score(args['model'], args['X'], args['y'],
-                cv=self._folds, groups=groups, scoring=['f1_macro', 'precision_macro', 'recall_macro'])
+        args['score'] = self._cross_val_score(args['model'], args['X'], args['y'].astype('int'),
+                cv=self._folds, groups=groups, scoring=['f1', 'precision', 'recall'])
         return args
