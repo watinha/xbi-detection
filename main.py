@@ -18,7 +18,7 @@ from pipeline.feature_selection import FeatureSelection
 from pipeline.classifier.classifier_tunning import ClassifierTunning
 from pipeline.model_evaluation.groupkfold_cv import GroupKFoldCV
 
-assert len(sys.argv) == 5, 'The script accepts 3 parameters: feature extractor (browserbite|crosscheck|browserninja1|browserninja2), classifier (randomforest|svm|dt|nn), type of xbi (internal|external) and K value'
+assert len(sys.argv) == 5, 'The script accepts 4 parameters: feature extractor (browserbite|crosscheck|browserninja1|browserninja2), classifier (randomforest|svm|dt|nn), type of xbi (internal|external) and K value'
 
 class_attr = sys.argv[3]
 k = int(sys.argv[4])
@@ -131,7 +131,7 @@ else:
 
 selector = FeatureSelection(SelectKBest(f_classif, k=k))
 pipeline = Pipeline([
-    ArffLoader(), extractor, classifier,
+    ArffLoader(), extractor, selector, classifier,
     GroupKFoldCV(GroupKFold(n_splits=10), 'URL', cross_validate)])
 result = pipeline.execute(open('data/07042020/07042020-dataset.binary.hist.arff').read())
 print('Model: ' + str(result['model']))
