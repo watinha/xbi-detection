@@ -15,6 +15,7 @@ from pipeline.extractor.browserninja import *
 from pipeline.extractor.browserninja.font_family_extractor import FontFamilyExtractor
 from pipeline.extractor.browserninja.relative_position_extractor import RelativePositionExtractor
 from pipeline.feature_selection import FeatureSelection
+from pipeline.preprocessing import Preprocessor
 from pipeline.classifier.classifier_tunning import ClassifierTunning
 from pipeline.model_evaluation.groupkfold_cv import GroupKFoldCV
 
@@ -65,6 +66,7 @@ pipeline = Pipeline([
             RelativePositionExtractor(),
             PlatformExtractor()
         ]),
+    Preprocessor(),
     FeatureSelection(SelectKBest(f_classif, k=8)),
     #ClassifierTunning(GridSearchCV(ensemble.RandomForestClassifier(), {
     #        'n_estimators': [2, 5, 10, 15],

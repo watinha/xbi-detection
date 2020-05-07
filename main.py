@@ -15,6 +15,7 @@ from pipeline.extractor.browserninja import *
 from pipeline.extractor.browserninja.font_family_extractor import FontFamilyExtractor
 from pipeline.extractor.browserninja.relative_position_extractor import RelativePositionExtractor
 from pipeline.feature_selection import FeatureSelection
+from pipeline.preprocessing import Preprocessor
 from pipeline.classifier.classifier_tunning import ClassifierTunning
 from pipeline.model_evaluation.groupkfold_cv import GroupKFoldCV
 
@@ -129,9 +130,10 @@ else:
         }, cv=GroupKFold(n_splits=3)),
         MLPClassifier(random_state=42), 'URL')
 
+preprocessor = Preprocessor()
 selector = FeatureSelection(SelectKBest(f_classif, k=k))
 pipeline = Pipeline([
-    ArffLoader(), extractor, selector, classifier,
+    ArffLoader(), extractor, preprocessor, selector, classifier,
     GroupKFoldCV(GroupKFold(n_splits=10), 'URL', cross_validate)])
 result = pipeline.execute(open('data/07042020/07042020-dataset.binary.hist.arff').read())
 print('Model: ' + str(result['model']))
