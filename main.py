@@ -88,7 +88,7 @@ if classifier_name == 'randomforest':
                 'max_depth': [5, 10, None], #'max_depth': [5, 10, 30, 50, None],
                 'min_samples_split': [3, 10, 30], #'min_samples_split': [2, 3, 10, 30],
                 'min_samples_leaf': [1, 5, 10],
-                'max_features': [5, 10, 'auto'],
+                'max_features': [3, 5, 10, 'auto'],
                 'class_weight': [None, 'balanced']
             }, cv=GroupKFold(n_splits=3)),
             ensemble.RandomForestClassifier(random_state=42), 'URL')
@@ -123,7 +123,7 @@ elif classifier_name == 'dt':
                 'max_depth': [5, 10, None],
                 'min_samples_split': [10, 30, 50],
                 'class_weight': [None, 'balanced'],
-                'max_features': [5, 10, None],
+                'max_features': [3, 5, 10, None],
                 'min_samples_leaf': [1, 5, 10]
             }, cv=GroupKFold(n_splits=3)),
             tree.DecisionTreeClassifier(random_state=42), 'URL')
@@ -191,17 +191,17 @@ fscore = result['score']['test_f1']
 precision = result['score']['test_precision']
 recall = result['score']['test_recall']
 roc = result['score']['test_roc_auc']
-fscore_csv = pd.read_csv('results/fscore.csv', index_col=0)
-precision_csv = pd.read_csv('results/precision.csv', index_col=0)
-recall_csv = pd.read_csv('results/recall.csv', index_col=0)
-roc_csv = pd.read_csv('results/roc.csv', index_col=0)
+fscore_csv = pd.read_csv('results/fscore-%s.csv' % (class_attr), index_col=0)
+precision_csv = pd.read_csv('results/precision-%s.csv' % (class_attr), index_col=0)
+recall_csv = pd.read_csv('results/recall-%s.csv' % (class_attr), index_col=0)
+roc_csv = pd.read_csv('results/roc-%s.csv' % (class_attr), index_col=0)
 
 fscore_csv[approach] = fscore
 precision_csv[approach] = precision
 recall_csv[approach] = recall
 roc_csv[approach] = roc
 
-fscore_csv.to_csv('results/fscore.csv')
-precision_csv.to_csv('results/precision.csv')
-recall_csv.to_csv('results/recall.csv')
-roc_csv.to_csv('results/roc.csv')
+fscore_csv.to_csv('results/fscore-%s.csv' % (class_attr))
+precision_csv.to_csv('results/precision-%s.csv' % (class_attr))
+recall_csv.to_csv('results/recall-%s.csv' % (class_attr))
+roc_csv.to_csv('results/roc-%s.csv' % (class_attr))
