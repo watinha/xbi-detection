@@ -1,6 +1,11 @@
 import random, arff, sys
 
+import pandas as pd
+
+from imblearn.under_sampling import TomekLinks, ClusterCentroids
+from imblearn.over_sampling import SMOTE
 from sklearn import tree, svm, ensemble
+from sklearn import metrics
 from sklearn.neural_network import MLPClassifier
 from sklearn.feature_selection import SelectKBest, chi2, f_classif
 from sklearn.model_selection import GridSearchCV,GroupKFold,cross_validate
@@ -86,17 +91,19 @@ if sys.argv[2] == 'randomforest':
             }, cv=GroupKFold(n_splits=3)),
             ensemble.RandomForestClassifier(random_state=42), 'URL')
 elif sys.argv[2] == 'svm':
-    classifier = ClassifierTunning(GridSearchCV(svm.SVC(), {
-            'kernel': ['linear', 'rbf', 'poly', 'sigmoid'],
-            #'kernel': ['linear'],
+    #classifier = ClassifierTunning(GridSearchCV(svm.SVC(), {
+    classifier = ClassifierTunning(GridSearchCV(svm.LinearSVC(), {
+            #'kernel': ['linear', 'rbf', 'poly', 'sigmoid'],
+            #'degree': [1, 2, 3],
+            #'coef0': [0, 10, 100],
+            'dual': [False],
             'C': [1, 10, 100],
-            'degree': [1, 2, 3],
-            'coef0': [0, 10, 100],
             'tol': [0.001, 0.1, 1],
             'class_weight': ['balanced', None],
             'max_iter': [1000]
         }, cv=GroupKFold(n_splits=3)),
-        svm.SVC(random_state=42), 'URL')
+        #svm.SVC(random_state=42), 'URL')
+        svm.LinearSVC(random_state=42), 'URL')
 elif sys.argv[2] == 'dt':
     if sys.argv[1] == 'crosscheck':
         classifier = ClassifierTunning(GridSearchCV(tree.DecisionTreeClassifier(), {
@@ -122,7 +129,8 @@ else:
     classifier = ClassifierTunning(GridSearchCV(MLPClassifier(), {
             'hidden_layer_sizes': [5, 10, 30],
             'activation': ['identity', 'logistic', 'tanh', 'relu'],
-            'solver': ['lbfgs', 'sgd', 'adam'],
+#            'solver': ['lbfgs', 'sgd', 'adam'],
+            'solver': ['adam'],
             'alpha': [0.0001, 0.01, 0.1],
             'max_iter': [1000],
             'learning_rate': ['constant', 'invscaling', 'adaptive'],
@@ -130,21 +138,57 @@ else:
         }, cv=GroupKFold(n_splits=3)),
         MLPClassifier(random_state=42), 'URL')
 
+sampler = TomekLinks()
+
+def cross_val_score_using_sampling(model, X, y, cv, groups, scoring):
+    fscore = []
+    precision = []
+    recall = []
+    for train_index, test_index in cv.split(X, y, groups):
+        X_train, X_test = X[train_index], X[test_index]
+        y_train, y_test = y[train_index], y[test_index]
+        X_samp, y_samp = sampler.fit_sample(X_train, y_train)
+        model.fit(X_samp, y_samp)
+        y_pred = model.predict(X_test)
+        fscore.append(metrics.f1_score(y_test, y_pred))
+        precision.append(metrics.precision_score(y_test, y_pred))
+        recall.append(metrics.recall_score(y_test, y_pred))
+    return { 'test_f1': fscore, 'test_precision': precision, 'test_recall': recall }
+
+groupcv = GroupKFoldCV(GroupKFold(n_splits=10), 'URL', cross_validate)
+
 preprocessor = Preprocessor()
 selector = FeatureSelection(SelectKBest(f_classif, k=k), k=k)
+approach = '%s-%s-%s-k%s' % (sys.argv[1], sys.argv[2], class_attr, str(k))
+
+print('running --- %s...' % (approach))
 pipeline = Pipeline([
-    ArffLoader(), extractor, preprocessor, selector, classifier,
-    GroupKFoldCV(GroupKFold(n_splits=10), 'URL', cross_validate)])
+    ArffLoader(), extractor, preprocessor, selector, classifier, groupcv])
 result = pipeline.execute(open('data/07042020/07042020-dataset.binary.hist.arff').read())
 print('Model: ' + str(result['model']))
 print('Features: ' + str(result['features']))
 print('K: ' + str(k))
 print('X dimensions:' + str(result['X'].shape))
-print('Test      F1: ' + str(result['score']['test_f1']))
 print('Test      F1: %f' % (reduce(lambda x,y: x+y, result['score']['test_f1']) / 10))
+print('Test      F1: ' + str(result['score']['test_f1']))
 print('Test      Precision: ' + str(result['score']['test_precision']))
 print('Test      Recall: ' + str(result['score']['test_recall']))
 if k == 300 and (sys.argv[2] == 'dt' or sys.argv[2] == 'randomforest'):
     result['model'].fit(result['X'], result['y'])
     for i in range(len(result['features'])):
         print('%s: %f' % (result['features'][i], result['model'].feature_importances_[i]))
+
+fscore = result['score']['test_f1']
+precision = result['score']['test_precision']
+recall = result['score']['test_recall']
+fscore_csv = pd.read_csv('results/fscore.csv', index_col=0)
+precision_csv = pd.read_csv('results/precision.csv', index_col=0)
+recall_csv = pd.read_csv('results/recall.csv', index_col=0)
+
+fscore_csv[approach] = fscore
+precision_csv[approach] = precision
+recall_csv[approach] = recall
+
+fscore_csv.to_csv('results/fscore.csv')
+precision_csv.to_csv('results/precision.csv')
+recall_csv.to_csv('results/recall.csv')
