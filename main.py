@@ -28,13 +28,15 @@ assert len(sys.argv) == 5, 'The script accepts 4 parameters: feature extractor (
 
 class_attr = sys.argv[3]
 k = int(sys.argv[4])
+extractor_name = sys.argv[1]
+classifier_name = sys.argv[2]
 
 extractor = None
-if sys.argv[1] == 'browserbite':
+if extractor_name == 'browserbite':
     extractor = BrowserbiteExtractor(class_attr)
-elif sys.argv[1] == 'crosscheck':
+elif extractor_name == 'crosscheck':
     extractor = CrossCheckExtractor(class_attr)
-elif sys.argv[1] == 'browserninja1':
+elif extractor_name == 'browserninja1':
     extractor = BrowserNinjaCompositeExtractor(class_attr,
         extractors=[
             ComplexityExtractor(),
@@ -43,7 +45,7 @@ elif sys.argv[1] == 'browserninja1':
             VisibilityExtractor(),
             PositionViewportExtractor(),
         ])
-elif sys.argv[1] == 'browserninja2':
+elif extractor_name == 'browserninja2':
     extractor = BrowserNinjaCompositeExtractor(class_attr,
         extractors=[
             ComplexityExtractor(),
@@ -68,8 +70,8 @@ else:
         ])
 
 classifier = None
-if sys.argv[2] == 'randomforest':
-    if sys.argv[1] == 'crosscheck':
+if classifier_name == 'randomforest':
+    if extractor_name == 'crosscheck':
         classifier = ClassifierTunning(GridSearchCV(ensemble.RandomForestClassifier(), {
                 'n_estimators': [5, 10, 15],
                 'criterion': ["gini", "entropy"],
@@ -90,22 +92,22 @@ if sys.argv[2] == 'randomforest':
                 'class_weight': [None, 'balanced']
             }, cv=GroupKFold(n_splits=3)),
             ensemble.RandomForestClassifier(random_state=42), 'URL')
-elif sys.argv[2] == 'svm':
-    #classifier = ClassifierTunning(GridSearchCV(svm.SVC(), {
-    classifier = ClassifierTunning(GridSearchCV(svm.LinearSVC(), {
-            #'kernel': ['linear', 'rbf', 'poly', 'sigmoid'],
-            #'degree': [1, 2, 3],
-            #'coef0': [0, 10, 100],
-            'dual': [False],
+elif classifier_name == 'svm':
+    classifier = ClassifierTunning(GridSearchCV(svm.SVC(), {
+    #classifier = ClassifierTunning(GridSearchCV(svm.LinearSVC(), {
+            'kernel': ['linear', 'rbf', 'poly', 'sigmoid'],
+            'degree': [1, 2, 3],
+            'coef0': [0, 10, 100],
+        #    'dual': [False],
             'C': [1, 10, 100],
             'tol': [0.001, 0.1, 1],
             'class_weight': ['balanced', None],
-            'max_iter': [1000]
+            'max_iter': [5000]
         }, cv=GroupKFold(n_splits=3)),
-        #svm.SVC(random_state=42), 'URL')
-        svm.LinearSVC(random_state=42), 'URL')
-elif sys.argv[2] == 'dt':
-    if sys.argv[1] == 'crosscheck':
+        svm.SVC(random_state=42), 'URL')
+        #svm.LinearSVC(random_state=42), 'URL')
+elif classifier_name == 'dt':
+    if extractor_name == 'crosscheck':
         classifier = ClassifierTunning(GridSearchCV(tree.DecisionTreeClassifier(), {
                 'criterion': ["gini", "entropy"],
                 'max_depth': [5, 10, None],
@@ -144,6 +146,7 @@ def cross_val_score_using_sampling(model, X, y, cv, groups, scoring):
     fscore = []
     precision = []
     recall = []
+    roc = []
     for train_index, test_index in cv.split(X, y, groups):
         X_train, X_test = X[train_index], X[test_index]
         y_train, y_test = y[train_index], y[test_index]
@@ -153,13 +156,18 @@ def cross_val_score_using_sampling(model, X, y, cv, groups, scoring):
         fscore.append(metrics.f1_score(y_test, y_pred))
         precision.append(metrics.precision_score(y_test, y_pred))
         recall.append(metrics.recall_score(y_test, y_pred))
-    return { 'test_f1': fscore, 'test_precision': precision, 'test_recall': recall }
+        roc.append(metrics.roc_auc_score(y_test, y_pred))
+    return { 'test_f1': fscore, 'test_precision': precision, 'test_recall': recall, 'test_roc_auc': roc }
 
-groupcv = GroupKFoldCV(GroupKFold(n_splits=10), 'URL', cross_validate)
+groupcv = None
+if (classifier_name == 'svm' or classifier_name == 'nn'):
+    groupcv = GroupKFoldCV(GroupKFold(n_splits=10), 'URL', cross_val_score_using_sampling)
+else:
+    groupcv = GroupKFoldCV(GroupKFold(n_splits=10), 'URL', cross_validate)
 
 preprocessor = Preprocessor()
 selector = FeatureSelection(SelectKBest(f_classif, k=k), k=k)
-approach = '%s-%s-%s-k%s' % (sys.argv[1], sys.argv[2], class_attr, str(k))
+approach = '%s-%s-%s-k%s' % (extractor_name, classifier_name, class_attr, str(k))
 
 print('running --- %s...' % (approach))
 pipeline = Pipeline([
@@ -169,11 +177,12 @@ print('Model: ' + str(result['model']))
 print('Features: ' + str(result['features']))
 print('K: ' + str(k))
 print('X dimensions:' + str(result['X'].shape))
+print('Test     ROC: %f' % (reduce(lambda x,y: x+y, result['score']['test_roc_auc']) / 10))
 print('Test      F1: %f' % (reduce(lambda x,y: x+y, result['score']['test_f1']) / 10))
 print('Test      F1: ' + str(result['score']['test_f1']))
 print('Test      Precision: ' + str(result['score']['test_precision']))
 print('Test      Recall: ' + str(result['score']['test_recall']))
-if k == 300 and (sys.argv[2] == 'dt' or sys.argv[2] == 'randomforest'):
+if k == 300 and (classifier_name == 'dt' or classifier_name == 'randomforest'):
     result['model'].fit(result['X'], result['y'])
     for i in range(len(result['features'])):
         print('%s: %f' % (result['features'][i], result['model'].feature_importances_[i]))
@@ -181,14 +190,18 @@ if k == 300 and (sys.argv[2] == 'dt' or sys.argv[2] == 'randomforest'):
 fscore = result['score']['test_f1']
 precision = result['score']['test_precision']
 recall = result['score']['test_recall']
+roc = result['score']['test_roc_auc']
 fscore_csv = pd.read_csv('results/fscore.csv', index_col=0)
 precision_csv = pd.read_csv('results/precision.csv', index_col=0)
 recall_csv = pd.read_csv('results/recall.csv', index_col=0)
+roc_csv = pd.read_csv('results/roc.csv', index_col=0)
 
 fscore_csv[approach] = fscore
 precision_csv[approach] = precision
 recall_csv[approach] = recall
+roc_csv[approach] = roc
 
 fscore_csv.to_csv('results/fscore.csv')
 precision_csv.to_csv('results/precision.csv')
 recall_csv.to_csv('results/recall.csv')
+roc_csv.to_csv('results/roc.csv')

@@ -10,5 +10,5 @@ class GroupKFoldCV():
         groups = list(args['data'][:,attributes.index(self._group_attr)])
 
         args['score'] = self._cross_val_score(args['model'], args['X'], args['y'].astype('int'),
-                cv=self._folds, groups=groups, scoring=['f1', 'precision', 'recall'])
+                cv=self._folds, groups=groups, scoring=['f1', 'precision', 'recall', 'roc_auc'])
         return args
