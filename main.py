@@ -8,7 +8,7 @@ from sklearn import tree, svm, ensemble
 from sklearn import metrics
 from sklearn.neural_network import MLPClassifier
 from sklearn.feature_selection import SelectKBest, chi2, f_classif
-from sklearn.model_selection import GridSearchCV,GroupKFold,cross_validate
+from sklearn.model_selection import GridSearchCV,GroupKFold,GroupShuffleSplit,cross_validate
 from functools import reduce
 
 from pipeline import Pipeline
@@ -79,7 +79,7 @@ if classifier_name == 'randomforest':
                 'min_samples_split': [3, 10, 30], #'min_samples_split': [2, 3, 10, 30],
                 'min_samples_leaf': [1, 5, 10],
                 'class_weight': [None, 'balanced']
-            }, cv=GroupKFold(n_splits=3)),
+            }, cv=GroupShuffleSplit(n_splits=3, random_state=42)),
             ensemble.RandomForestClassifier(random_state=42), 'URL')
     else:
         classifier = ClassifierTunning(GridSearchCV(ensemble.RandomForestClassifier(), {
@@ -90,7 +90,7 @@ if classifier_name == 'randomforest':
                 'min_samples_leaf': [1, 5, 10],
                 'max_features': [3, 5, 10, 'auto'],
                 'class_weight': [None, 'balanced']
-            }, cv=GroupKFold(n_splits=3)),
+            }, cv=GroupShuffleSplit(n_splits=3, random_state=42)),
             ensemble.RandomForestClassifier(random_state=42), 'URL')
 elif classifier_name == 'svm':
     classifier = ClassifierTunning(GridSearchCV(svm.SVC(), {
@@ -103,7 +103,7 @@ elif classifier_name == 'svm':
             'tol': [0.001, 0.1, 1],
             'class_weight': ['balanced', None],
             'max_iter': [5000]
-        }, cv=GroupKFold(n_splits=3)),
+        }, cv=GroupShuffleSplit(n_splits=3, random_state=42)),
         svm.SVC(random_state=42), 'URL')
         #svm.LinearSVC(random_state=42), 'URL')
 elif classifier_name == 'dt':
@@ -115,7 +115,7 @@ elif classifier_name == 'dt':
                 'class_weight': [None, 'balanced'],
                 #'max_features': [5, 10, None],
                 'min_samples_leaf': [1, 5, 10]
-            }, cv=GroupKFold(n_splits=3)),
+            }, cv=GroupShuffleSplit(n_splits=3, random_state=42)),
             tree.DecisionTreeClassifier(random_state=42), 'URL')
     else:
         classifier = ClassifierTunning(GridSearchCV(tree.DecisionTreeClassifier(), {
@@ -125,7 +125,7 @@ elif classifier_name == 'dt':
                 'class_weight': [None, 'balanced'],
                 'max_features': [3, 5, 10, None],
                 'min_samples_leaf': [1, 5, 10]
-            }, cv=GroupKFold(n_splits=3)),
+            }, cv=GroupShuffleSplit(n_splits=3, random_state=42)),
             tree.DecisionTreeClassifier(random_state=42), 'URL')
 else:
     classifier = ClassifierTunning(GridSearchCV(MLPClassifier(), {
@@ -137,7 +137,7 @@ else:
             'max_iter': [1000],
             'learning_rate': ['constant', 'invscaling', 'adaptive'],
             'random_state': [42]
-        }, cv=GroupKFold(n_splits=3)),
+        }, cv=GroupShuffleSplit(n_splits=3, random_state=42)),
         MLPClassifier(random_state=42), 'URL')
 
 sampler = TomekLinks()
@@ -161,9 +161,9 @@ def cross_val_score_using_sampling(model, X, y, cv, groups, scoring):
 
 groupcv = None
 if (classifier_name == 'svm' or classifier_name == 'nn'):
-    groupcv = GroupKFoldCV(GroupKFold(n_splits=10), 'URL', cross_val_score_using_sampling)
+    groupcv = GroupKFoldCV(GroupShuffleSplit(n_splits=10, random_state=42), 'URL', cross_val_score_using_sampling)
 else:
-    groupcv = GroupKFoldCV(GroupKFold(n_splits=10), 'URL', cross_validate)
+    groupcv = GroupKFoldCV(GroupShuffleSplit(n_splits=10, random_state=42), 'URL', cross_validate)
 
 preprocessor = Preprocessor()
 selector = FeatureSelection(SelectKBest(f_classif, k=k), k=k)
