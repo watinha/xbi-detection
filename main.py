@@ -171,7 +171,7 @@ approach = '%s-%s-%s-k%s' % (extractor_name, classifier_name, class_attr, str(k)
 
 print('running --- %s...' % (approach))
 pipeline = Pipeline([
-    ArffLoader(), extractor, preprocessor, selector, classifier, groupcv])
+    ArffLoader(), extractor, preprocessor, classifier, groupcv])
 result = pipeline.execute(open('data/07042020/07042020-dataset.binary.hist.arff').read())
 print('Model: ' + str(result['model']))
 print('Features: ' + str(result['features']))
