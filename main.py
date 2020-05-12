@@ -6,6 +6,7 @@ from imblearn.under_sampling import TomekLinks, ClusterCentroids
 from imblearn.over_sampling import SMOTE
 from sklearn import tree, svm, ensemble
 from sklearn import metrics
+from sklearn.calibration import CalibratedClassifierCV
 from sklearn.neural_network import MLPClassifier
 from sklearn.feature_selection import SelectKBest, chi2, f_classif
 from sklearn.model_selection import GridSearchCV,GroupKFold,GroupShuffleSplit,cross_validate
@@ -98,13 +99,13 @@ elif classifier_name == 'svm':
             'kernel': ['linear', 'rbf', 'poly', 'sigmoid'],
             'degree': [1, 2, 3],
             'coef0': [0, 10, 100],
-        #    'dual': [False],
+            #'dual': [False],
             'C': [1, 10, 100],
             'tol': [0.001, 0.1, 1],
             'class_weight': ['balanced', None],
             'max_iter': [5000]
         }, cv=GroupShuffleSplit(n_splits=3, random_state=42)),
-        svm.SVC(random_state=42), 'URL')
+        svm.SVC(random_state=42, probability=True), 'URL')
         #svm.LinearSVC(random_state=42), 'URL')
 elif classifier_name == 'dt':
     if extractor_name == 'crosscheck':
@@ -147,23 +148,46 @@ def cross_val_score_using_sampling(model, X, y, cv, groups, scoring):
     precision = []
     recall = []
     roc = []
+    best_fscore = []
+    best_precision = []
+    best_recall = []
+    best_roc = []
     for train_index, test_index in cv.split(X, y, groups):
         X_train, X_test = X[train_index], X[test_index]
         y_train, y_test = y[train_index], y[test_index]
         X_samp, y_samp = sampler.fit_sample(X_train, y_train)
         model.fit(X_samp, y_samp)
         y_pred = model.predict(X_test)
+
         fscore.append(metrics.f1_score(y_test, y_pred))
         precision.append(metrics.precision_score(y_test, y_pred))
         recall.append(metrics.recall_score(y_test, y_pred))
         roc.append(metrics.roc_auc_score(y_test, y_pred))
-    return { 'test_f1': fscore, 'test_precision': precision, 'test_recall': recall, 'test_roc_auc': roc }
+
+        y_pred = model.predict_proba(X_test)
+        probability = y_pred[:,1]
+
+        best_roc.append(metrics.roc_auc_score(y_test, probability))
+        precision2, recall2, threasholds = metrics.precision_recall_curve(y_test, probability)
+        best_f = 0
+        best_r = 0
+        best_p = 0
+        for i in range(len(precision2)):
+            new_fscore = 2 * precision2[i] * recall2[i] / (precision2[i] + recall2[i])
+            if new_fscore > best_f:
+                best_f = new_fscore
+                best_r = recall2[i]
+                best_p = precision2[i]
+
+        best_fscore.append(best_f)
+        best_precision.append(best_p)
+        best_recall.append(best_r)
+
+    return { 'test_f1': fscore, 'test_precision': precision, 'test_recall': recall, 'test_roc_auc': roc,
+            'best_f1': best_fscore, 'best_precision': best_precision, 'best_recall': best_recall, 'best_roc': best_roc }
 
 groupcv = None
-if (classifier_name == 'svm' or classifier_name == 'nn'):
-    groupcv = GroupKFoldCV(GroupShuffleSplit(n_splits=10, random_state=42), 'URL', cross_val_score_using_sampling)
-else:
-    groupcv = GroupKFoldCV(GroupShuffleSplit(n_splits=10, random_state=42), 'URL', cross_validate)
+groupcv = GroupKFoldCV(GroupShuffleSplit(n_splits=10, random_state=42), 'URL', cross_val_score_using_sampling)
 
 preprocessor = Preprocessor()
 selector = FeatureSelection(SelectKBest(f_classif, k=k), k=k)
@@ -182,15 +206,20 @@ print('Test      F1: %f' % (reduce(lambda x,y: x+y, result['score']['test_f1']) 
 print('Test      F1: ' + str(result['score']['test_f1']))
 print('Test      Precision: ' + str(result['score']['test_precision']))
 print('Test      Recall: ' + str(result['score']['test_recall']))
-if k == 300 and (classifier_name == 'dt' or classifier_name == 'randomforest'):
+print('Best      F1: ' + str(result['score']['best_f1']))
+print('Best      Precision: ' + str(result['score']['best_precision']))
+print('Best      Recall: ' + str(result['score']['best_recall']))
+print('Best     ROC: ' + str(result['score']['best_roc']))
+print('Best     ROC: %f' % (reduce(lambda x, y: x+y, result['score']['best_roc']) / 10))
+if k == 3 and (classifier_name == 'dt' or classifier_name == 'randomforest'):
     result['model'].fit(result['X'], result['y'])
     for i in range(len(result['features'])):
         print('%s: %f' % (result['features'][i], result['model'].feature_importances_[i]))
 
-fscore = result['score']['test_f1']
-precision = result['score']['test_precision']
-recall = result['score']['test_recall']
-roc = result['score']['test_roc_auc']
+fscore = result['score']['best_f1']
+precision = result['score']['best_precision']
+recall = result['score']['best_recall']
+roc = result['score']['best_roc']
 fscore_csv = pd.read_csv('results/fscore-%s.csv' % (class_attr), index_col=0)
 precision_csv = pd.read_csv('results/precision-%s.csv' % (class_attr), index_col=0)
 recall_csv = pd.read_csv('results/recall-%s.csv' % (class_attr), index_col=0)
