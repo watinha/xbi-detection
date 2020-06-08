@@ -1,0 +1,44 @@
+running --- browserbite-dt-external-k3...
+Model: DecisionTreeClassifier(ccp_alpha=0.0, class_weight=None, criterion='gini',
+                       max_depth=10, max_features=10, max_leaf_nodes=None,
+                       min_impurity_decrease=0.0, min_impurity_split=None,
+                       min_samples_leaf=5, min_samples_split=30,
+                       min_weight_fraction_leaf=0.0, presort='deprecated',
+                       random_state=42, splitter='best')
+Features: ['diff_height', 'diff_width', 'diff_x', 'diff_y', 'missmatch', 'base_bin1', 'base_bin2', 'base_bin3', 'base_bin4', 'base_bin5', 'base_bin6', 'base_bin7', 'base_bin8', 'base_bin9', 'base_bin10', 'target_bin1', 'target_bin2', 'target_bin3', 'target_bin4', 'target_bin5', 'target_bin6', 'target_bin7', 'target_bin8', 'target_bin9', 'target_bin10', 'platform_id']
+K: 3
+X dimensions:(8388, 26)
+Test     ROC: 0.839577
+Test      F1: 0.529250
+Test      F1: [0.76056338 0.42105263 0.30107527 0.33333333 0.48387097 0.8
+ 0.30769231 0.6        0.55652174 0.72839506]
+Test      Precision: [0.84375    0.8        1.         0.35294118 0.51724138 0.86021505
+ 0.90909091 0.70909091 0.72727273 0.9516129 ]
+Test      Recall: [0.69230769 0.28571429 0.17721519 0.31578947 0.45454545 0.74766355
+ 0.18518519 0.52       0.45070423 0.59      ]
+diff_height: 0.186801
+diff_width: 0.374297
+diff_x: 0.350026
+diff_y: 0.010286
+missmatch: 0.000000
+base_bin1: 0.002711
+base_bin2: 0.002170
+base_bin3: 0.004421
+base_bin4: 0.000000
+base_bin5: 0.002868
+base_bin6: 0.000000
+base_bin7: 0.000000
+base_bin8: 0.002488
+base_bin9: 0.010205
+base_bin10: 0.003465
+target_bin1: 0.006920
+target_bin2: 0.002492
+target_bin3: 0.000000
+target_bin4: 0.000000
+target_bin5: 0.004080
+target_bin6: 0.000000
+target_bin7: 0.000650
+target_bin8: 0.006183
+target_bin9: 0.000000
+target_bin10: 0.000000
+platform_id: 0.029936

@@ -1,0 +1,69 @@
+[1] "============== Shapiro ROC-External ==================="
+null device 
+          1 
+
+	Shapiro-Wilk normality test
+
+data:  roc_external[, "browserbite.nn.external.k3"]
+W = 0.9359, p-value = 0.5083
+
+
+	Shapiro-Wilk normality test
+
+data:  roc_external[, "crosscheck.dt.external.k3"]
+W = 0.94488, p-value = 0.6085
+
+
+	Shapiro-Wilk normality test
+
+data:  roc_external[, "browserninja1.nn.external.k3"]
+W = 0.85841, p-value = 0.07308
+
+
+	Shapiro-Wilk normality test
+
+data:  roc_external[, "browserninja2.randomforest.external.k3"]
+W = 0.72086, p-value = 0.001578
+
+
+	Shapiro-Wilk normality test
+
+data:  roc_external[, "browserninja3.randomforest.external.k3"]
+W = 0.91402, p-value = 0.3098
+
+[1] "============== Friedman ROC-External =============="
+
+	Friedman rank sum test
+
+data:  mat
+Friedman chi-squared = 27.2, df = 4, p-value = 1.811e-05
+
+[1] " -- post hoc analysis"
+
+	Pairwise comparisons using Nemenyi multiple comparison test	
+             with q approximation for unreplicated blocked data 
+
+data:  mat 
+
+                                       browserbite.nn.external.k3
+crosscheck.dt.external.k3              0.27579                   
+browserninja1.nn.external.k3           0.27579                   
+browserninja2.randomforest.external.k3 0.08083                   
+browserninja3.randomforest.external.k3 0.43571                   
+                                       crosscheck.dt.external.k3
+crosscheck.dt.external.k3              -                        
+browserninja1.nn.external.k3           0.00072                  
+browserninja2.randomforest.external.k3 5.9e-05                  
+browserninja3.randomforest.external.k3 0.00220                  
+                                       browserninja1.nn.external.k3
+crosscheck.dt.external.k3              -                           
+browserninja1.nn.external.k3           -                           
+browserninja2.randomforest.external.k3 0.97998                     
+browserninja3.randomforest.external.k3 0.99860                     
+                                       browserninja2.randomforest.external.k3
+crosscheck.dt.external.k3              -                                     
+browserninja1.nn.external.k3           -                                     
+browserninja2.randomforest.external.k3 -                                     
+browserninja3.randomforest.external.k3 0.91532                               
+
+P value adjustment method: none 

@@ -1,0 +1,22 @@
+running --- crosscheck-dt-internal-k3...
+Model: DecisionTreeClassifier(ccp_alpha=0.0, class_weight=None, criterion='entropy',
+                       max_depth=5, max_features=None, max_leaf_nodes=None,
+                       min_impurity_decrease=0.0, min_impurity_split=None,
+                       min_samples_leaf=10, min_samples_split=50,
+                       min_weight_fraction_leaf=0.0, presort='deprecated',
+                       random_state=42, splitter='best')
+Features: ['area', 'displacement', 'sdr', 'chisquared']
+K: 3
+X dimensions:(8388, 4)
+Test     ROC: 0.878849
+Test      F1: 0.520915
+Test      F1: [0.51485149 0.45833333 0.60869565 0.6        0.35087719 0.53503185
+ 0.60714286 0.49275362 0.44444444 0.59701493]
+Test      Precision: [0.76470588 0.5        0.91304348 1.         0.90909091 0.61764706
+ 0.65384615 0.73913043 0.45714286 0.66666667]
+Test      Recall: [0.3880597  0.42307692 0.45652174 0.42857143 0.2173913  0.47191011
+ 0.56666667 0.36956522 0.43243243 0.54054054]
+area: 0.067660
+displacement: 0.025995
+sdr: 0.532626
+chisquared: 0.373718

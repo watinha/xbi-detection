@@ -1,0 +1,31 @@
+running --- browserninja1-dt-internal-k3...
+Model: DecisionTreeClassifier(ccp_alpha=0.0, class_weight=None, criterion='entropy',
+                       max_depth=5, max_features=10, max_leaf_nodes=None,
+                       min_impurity_decrease=0.0, min_impurity_split=None,
+                       min_samples_leaf=1, min_samples_split=10,
+                       min_weight_fraction_leaf=0.0, presort='deprecated',
+                       random_state=42, splitter='best')
+Features: ['childsNumber', 'textLength', 'area', 'phash', 'chiSquared', 'imageDiff', 'width_comp', 'height_comp', 'left_visibility', 'right_visibility', 'left_comp', 'right_comp', 'y_comp']
+K: 3
+X dimensions:(8388, 13)
+Test     ROC: 0.887028
+Test      F1: 0.622258
+Test      F1: [0.58585859 0.58536585 0.58823529 0.69565217 0.50793651 0.63703704
+ 0.78431373 0.58333333 0.55172414 0.703125  ]
+Test      Precision: [0.90625    0.8        0.64102564 0.88888889 0.94117647 0.93478261
+ 0.95238095 0.80769231 0.76190476 0.83333333]
+Test      Recall: [0.43283582 0.46153846 0.54347826 0.57142857 0.34782609 0.48314607
+ 0.66666667 0.45652174 0.43243243 0.60810811]
+childsNumber: 0.000000
+textLength: 0.083967
+area: 0.027472
+phash: 0.117098
+chiSquared: 0.037096
+imageDiff: 0.233592
+width_comp: 0.000000
+height_comp: 0.413105
+left_visibility: 0.012825
+right_visibility: 0.018390
+left_comp: 0.036876
+right_comp: 0.019579
+y_comp: 0.000000

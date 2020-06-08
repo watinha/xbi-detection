@@ -1,9 +1,10 @@
 import random, arff, sys
 
-from sklearn import tree, svm, ensemble
+from imblearn.under_sampling import TomekLinks, ClusterCentroids
+from sklearn import tree, svm, ensemble, metrics
 from sklearn.neural_network import MLPClassifier
 from sklearn.feature_selection import SelectKBest, chi2, f_classif
-from sklearn.model_selection import GridSearchCV,GroupKFold,cross_validate
+from sklearn.model_selection import GridSearchCV,GroupKFold,GroupShuffleSplit,cross_validate
 from functools import reduce
 
 from pipeline import Pipeline
@@ -49,25 +50,44 @@ features = [
     'diff_bin41', 'diff_bin42', 'diff_bin43', 'diff_bin44', 'diff_bin45'
 ]
 
+sampler = TomekLinks()
+
+def cross_val_score_using_sampling(model, X, y, cv, groups, scoring):
+    fscore = []
+    precision = []
+    recall = []
+    roc = []
+    for train_index, test_index in cv.split(X, y, groups):
+        X_train, X_test = X[train_index], X[test_index]
+        y_train, y_test = y[train_index], y[test_index]
+        X_samp, y_samp = sampler.fit_sample(X_train, y_train)
+        model.fit(X_samp, y_samp)
+        y_pred = model.predict(X_test)
+        fscore.append(metrics.f1_score(y_test, y_pred))
+        precision.append(metrics.precision_score(y_test, y_pred))
+        recall.append(metrics.recall_score(y_test, y_pred))
+        roc.append(metrics.roc_auc_score(y_test, y_pred))
+    return { 'test_f1': fscore, 'test_precision': precision, 'test_recall': recall, 'test_roc_auc': roc }
+
 random.seed(42)
 pipeline = Pipeline([
     ArffLoader(),
-    #XBIExtractor(features, 'internal'),
-    #CrossCheckExtractor('internal'),
-    #BrowserbiteExtractor('internal'),
-    BrowserNinjaCompositeExtractor('internal',
-        extractors=[
-            ComplexityExtractor(),
-            ImageComparisonExtractor(),
-            SizeViewportExtractor(),
-            VisibilityExtractor(),
-            PositionViewportExtractor(),
-            FontFamilyExtractor(),
-            RelativePositionExtractor(),
-            PlatformExtractor()
-        ]),
+    #XBIExtractor(features, 'external'),
+    CrossCheckExtractor('external'),
+    #BrowserbiteExtractor('external'),
+    #BrowserNinjaCompositeExtractor('external',
+    #    extractors=[
+    #        ComplexityExtractor(),
+    #        ImageComparisonExtractor(),
+    #        SizeViewportExtractor(),
+    #        VisibilityExtractor(),
+    #        PositionViewportExtractor(),
+    #        FontFamilyExtractor(),
+    #        RelativePositionExtractor(),
+    #        PlatformExtractor()
+    #    ]),
     Preprocessor(),
-    FeatureSelection(SelectKBest(f_classif, k=8), k=8),
+    #FeatureSelection(SelectKBest(f_classif, k=8), k=8),
     #ClassifierTunning(GridSearchCV(ensemble.RandomForestClassifier(), {
     #        'n_estimators': [2, 5, 10, 15],
     #        'criterion': ["gini", "entropy"],
@@ -76,29 +96,29 @@ pipeline = Pipeline([
     #        'min_samples_leaf': [1, 5, 10],
     #        'max_features': [3, 4, 5, 10, 'auto'],
     #        'class_weight': [None, 'balanced']
-    #    }, cv=GroupKFold(n_splits=3)),
+    #    }, cv=GroupShuffleSplit(n_splits=3)),
     #    ensemble.RandomForestClassifier(random_state=42), 'URL'),
-    #ClassifierTunning(GridSearchCV(svm.LinearSVC(), {
-    #        #'kernel': ['linear', 'rbf', 'poly', 'sigmoid'],
+    #ClassifierTunning(GridSearchCV(svm.SVC(), {
+    #        'kernel': ['linear', 'rbf', 'poly', 'sigmoid'],
     #        #'kernel': ['linear'],
     #        'C': [1, 10, 100],
-    #        #'degree': [1, 2, 3],
-    #        #'coef0': [0, 10, 100],
+    #        'degree': [1, 2, 3],
+    #        'coef0': [0, 10, 100],
     #        'tol': [0.001, 0.1, 1],
     #        'class_weight': ['balanced', None],
     #        'max_iter': [2000]
-    #    }, cv=GroupKFold(n_splits=3)),
-    #    svm.LinearSVC(random_state=42), 'URL'),
+    #    }, cv=GroupShuffleSplit(n_splits=3)),
+    #    svm.SVC(random_state=42), 'URL'),
     ClassifierTunning(GridSearchCV(tree.DecisionTreeClassifier(), {
             'criterion': ["gini", "entropy"],
             'max_depth': [5, 10, None],
             'min_samples_split': [10, 30, 50],
             'class_weight': [None, 'balanced'],
             #'max_features': [5, None],
-            #'max_features': [5, 10, None],
+            'max_features': [5, 10, None],
             'min_samples_leaf': [1, 5, 10]
         #}, cv=5),
-        }, cv=GroupKFold(n_splits=3)),
+        }, cv=GroupShuffleSplit(n_splits=3)),
         tree.DecisionTreeClassifier(random_state=42), 'URL'),
     #ClassifierTunning(GridSearchCV(MLPClassifier(), {
     #        'hidden_layer_sizes': [5, 10, 30],
@@ -108,22 +128,23 @@ pipeline = Pipeline([
     #        'max_iter': [2000],
     #        'learning_rate': ['constant', 'invscaling', 'adaptive'],
     #        'random_state': [42]
-    #    }, cv=GroupKFold(n_splits=3)),
+    #    }, cv=GroupShuffleSplit(n_splits=3)),
     #    MLPClassifier(random_state=42), 'URL'),
-    GroupKFoldCV(GroupKFold(n_splits=10), 'URL', cross_validate)
+    GroupKFoldCV(GroupShuffleSplit(n_splits=10), 'URL', cross_val_score_using_sampling)
 ])
 result = pipeline.execute(open('data/07042020/07042020-dataset.binary.hist.arff').read())
 print('Model: ' + str(result['model']))
 print('Features: ' + str(result['features']))
 print('X dimensions:' + str(result['X'].shape))
-print('Trainning F1: ' + str(result['score']['train_f1_macro']))
-print('Test      F1: ' + str(result['score']['test_f1_macro']))
-print('Trainning F1: %f' % (reduce(lambda x,y: x+y, result['score']['train_f1_macro']) / 10))
-print('Test      F1: %f' % (reduce(lambda x,y: x+y, result['score']['test_f1_macro']) / 10))
+#print('Trainning F1: ' + str(result['score']['train_f1_macro']))
+print('Test      F1: ' + str(result['score']['test_f1']))
+#print('Trainning F1: %f' % (reduce(lambda x,y: x+y, result['score']['train_f1_macro']) / 10))
+print('Test      F1: %f' % (reduce(lambda x,y: x+y, result['score']['test_f1']) / 10))
 #print('Trainning Precision: ' + str(result['score']['train_precision_macro']))
-#print('Test      Precision: ' + str(result['score']['test_precision_macro']))
+print('Test      Precision: ' + str(result['score']['test_precision']))
 #print('Trainning Recall: ' + str(result['score']['train_recall_macro']))
-#print('Test      Recall: ' + str(result['score']['test_recall_macro']))
+print('Test      Recall: ' + str(result['score']['test_recall']))
+print('Test     ROC AUC: ' + str(result['score']['test_roc_auc']))
 
 #print('--- Error analysis ---')
 #model = result['model']

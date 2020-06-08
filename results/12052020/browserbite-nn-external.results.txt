@@ -1,0 +1,17 @@
+running --- browserbite-nn-external-k3...
+Model: MLPClassifier(activation='logistic', alpha=0.0001, batch_size='auto',
+              beta_1=0.9, beta_2=0.999, early_stopping=False, epsilon=1e-08,
+              hidden_layer_sizes=10, learning_rate='constant',
+              learning_rate_init=0.001, max_fun=15000, max_iter=1000,
+              momentum=0.9, n_iter_no_change=10, nesterovs_momentum=True,
+              power_t=0.5, random_state=42, shuffle=True, solver='adam',
+              tol=0.0001, validation_fraction=0.1, verbose=False,
+              warm_start=False)
+Features: ['diff_height', 'diff_width', 'diff_x', 'diff_y', 'missmatch', 'base_bin1', 'base_bin2', 'base_bin3', 'base_bin4', 'base_bin5', 'base_bin6', 'base_bin7', 'base_bin8', 'base_bin9', 'base_bin10', 'target_bin1', 'target_bin2', 'target_bin3', 'target_bin4', 'target_bin5', 'target_bin6', 'target_bin7', 'target_bin8', 'target_bin9', 'target_bin10', 'platform_id']
+K: 3
+X dimensions:(8388, 26)
+Test     ROC: 0.648212
+Test      F1: 0.406097
+Test      F1: [0.868421052631579, 0.4, 0.2978723404255319, 0.2727272727272727, 0.372093023255814, 0.5844155844155844, 0.25396825396825395, 0.4660194174757282, 0.5454545454545454, 0.0]
+Test      Precision: [0.8918918918918919, 0.6666666666666666, 0.9333333333333333, 1.0, 0.8, 0.9574468085106383, 0.8888888888888888, 0.8571428571428571, 0.9642857142857143, 0.0]
+Test      Recall: [0.8461538461538461, 0.2857142857142857, 0.17721518987341772, 0.15789473684210525, 0.24242424242424243, 0.4205607476635514, 0.14814814814814814, 0.32, 0.38028169014084506, 0.0]

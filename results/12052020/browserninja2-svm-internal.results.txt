@@ -1,0 +1,13 @@
+running --- browserninja2-svm-internal-k3...
+Model: SVC(C=100, break_ties=False, cache_size=200, class_weight=None, coef0=0,
+    decision_function_shape='ovr', degree=3, gamma='scale', kernel='poly',
+    max_iter=5000, probability=False, random_state=42, shrinking=True,
+    tol=0.001, verbose=False)
+Features: ['childsNumber', 'textLength', 'area', 'phash', 'chiSquared', 'imageDiff', 'width_comp', 'height_comp', 'left_visibility', 'right_visibility', 'left_comp', 'right_comp', 'y_comp', 'parent_x', 'parent_y', 'previous_sibling_x', 'previous_sibling_y', 'next_sibling_x', 'next_sibling_y', 'platform_id']
+K: 3
+X dimensions:(8388, 20)
+Test     ROC: 0.701743
+Test      F1: 0.477138
+Test      F1: [0.39560439560439564, 0.5909090909090908, 0.6388888888888888, 0.5283018867924528, 0.41935483870967744, 0.40287769784172667, 0.6666666666666666, 0.3373493975903615, 0.37037037037037035, 0.4210526315789474]
+Test      Precision: [0.75, 0.7222222222222222, 0.8846153846153846, 0.56, 0.8125, 0.56, 0.6666666666666666, 0.3783783783783784, 0.3409090909090909, 0.4745762711864407]
+Test      Recall: [0.26865671641791045, 0.5, 0.5, 0.5, 0.2826086956521739, 0.3146067415730337, 0.6666666666666666, 0.30434782608695654, 0.40540540540540543, 0.3783783783783784]

@@ -1,0 +1,111 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+        <title>Index</title>
+        <style type="text/css" media="screen">
+            img {
+                display: block;
+            }
+            .screenshots {
+                margin-top: 75px;
+                position: relative;
+            }
+            .menu {
+                position: fixed;
+                right: 0;
+                top: 100px;
+                width: 500px;
+            }
+            #container {
+                position: fixed;
+                top: 200px;
+                right: 10px;
+            }
+            #container img {
+                display: block;
+                float: none;
+                margin: 10px;
+                box-shadow: 3px 3px 3px #AAA;
+            }
+            .cursor {
+                display: block;
+                font-size: 18px;
+                padding: 5px;
+                min-height: 18px;
+                font-weight: bold;
+                background-color: #DEDEDE;
+            }
+            .screenshots div {
+                position: relative;
+                float: left;
+                margin: 10px;
+                box-shadow: 3px 3px 3px #AAA;
+            }
+            #report {
+                clear: both;
+                background-color: red;
+                padding: 10px;
+                box-shadow: 3px 3px 3px #AAA;
+                border: 1px solid black;
+            }
+            table {
+                position: fixed;
+                z-index: 100;
+                top: 0;
+                background-color: white;
+                box-shadow: 2px 1px 1px #AAA;
+            }
+            table th {
+                border: 1px solid black;
+                margin: 0;
+                padding: 5px;
+            }
+        </style>
+    </head>
+    <body>
+        <table>
+            <tr>
+                <th>baseX</th>
+                <th>targeX</th>
+                <th>baseY</th>
+                <th>targetY</th>
+                <th>baseHeight</th>
+                <th>targetHeight</th>
+                <th>baseWidth</th>
+                <th>targetWidth</th>
+                <th>diff.x</th><th>diff.y</th><th>diff.height</th><th>diff.width</th>
+                <th>imageDiff</th><th>basePlatform</th><th>targetPlatform</th>
+                <th>pHashSimilarity</th>
+                <th>Result</th>
+            </tr>
+        </table>
+
+        <div class="screenshots">
+        </div>
+
+        <div class="menu">
+            <fieldset id="loading">
+                <legend>Insira o arquivo arff</legend>
+                <input type="file" id="arquivo" name="arquivo" value="">
+            </fieldset>
+            <fieldset id="xbi" style="none">
+                <legend>XBI classifier</legend>
+                <label for="classifier">Classificação (1 ou 0):</label>
+                <input type="text" id="classifier" value="" />
+            </fieldset>
+            <span class="cursor" id="cursor"></span>
+            <button style="">generate classified arff</button>
+        </div>
+
+        <div id="container">
+        </div>
+        <div id="report"></div>
+        <script type="text/javascript"
+                src="new.js"
+                charset="utf-8"></script>
+        <script type="text/javascript"
+                src="index.js"
+                charset="utf-8"></script>
+    </body>
+</html>

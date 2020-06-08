@@ -1,0 +1,24 @@
+running --- crosscheck-randomforest-internal-k3...
+Model: RandomForestClassifier(bootstrap=True, ccp_alpha=0.0, class_weight=None,
+                       criterion='entropy', max_depth=10, max_features='auto',
+                       max_leaf_nodes=None, max_samples=None,
+                       min_impurity_decrease=0.0, min_impurity_split=None,
+                       min_samples_leaf=5, min_samples_split=3,
+                       min_weight_fraction_leaf=0.0, n_estimators=5,
+                       n_jobs=None, oob_score=False, random_state=42, verbose=0,
+                       warm_start=False)
+Features: ['area', 'displacement', 'sdr', 'chisquared']
+K: 3
+X dimensions:(8388, 4)
+Test     ROC: 0.872192
+Test      F1: 0.554849
+Test      F1: [0.51546392 0.63414634 0.55384615 0.63414634 0.37931034 0.53900709
+ 0.69387755 0.47222222 0.50980392 0.61666667]
+Test      Precision: [0.83333333 0.86666667 0.94736842 1.         0.91666667 0.73076923
+ 0.89473684 0.65384615 0.92857143 0.80434783]
+Test      Recall: [0.37313433 0.5        0.39130435 0.46428571 0.23913043 0.42696629
+ 0.56666667 0.36956522 0.35135135 0.5       ]
+area: 0.158636
+displacement: 0.116756
+sdr: 0.375894
+chisquared: 0.348713

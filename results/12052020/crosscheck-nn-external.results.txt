@@ -1,0 +1,17 @@
+running --- crosscheck-nn-external-k3...
+Model: MLPClassifier(activation='tanh', alpha=0.0001, batch_size='auto', beta_1=0.9,
+              beta_2=0.999, early_stopping=False, epsilon=1e-08,
+              hidden_layer_sizes=5, learning_rate='constant',
+              learning_rate_init=0.001, max_fun=15000, max_iter=1000,
+              momentum=0.9, n_iter_no_change=10, nesterovs_momentum=True,
+              power_t=0.5, random_state=42, shuffle=True, solver='adam',
+              tol=0.0001, validation_fraction=0.1, verbose=False,
+              warm_start=False)
+Features: ['area', 'displacement', 'sdr', 'chisquared']
+K: 3
+X dimensions:(8388, 4)
+Test     ROC: 0.587505
+Test      F1: 0.247745
+Test      F1: [0.835820895522388, 0.0689655172413793, 0.024999999999999998, 0.0, 0.0, 0.5034965034965034, 0.03636363636363636, 0.2758620689655173, 0.20253164556962025, 0.5294117647058824]
+Test      Precision: [1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+Test      Recall: [0.717948717948718, 0.03571428571428571, 0.012658227848101266, 0.0, 0.0, 0.3364485981308411, 0.018518518518518517, 0.16, 0.11267605633802817, 0.36]

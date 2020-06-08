@@ -1,0 +1,33 @@
+running --- browserninja1-randomforest-internal-k3...
+Model: RandomForestClassifier(bootstrap=True, ccp_alpha=0.0, class_weight=None,
+                       criterion='entropy', max_depth=None, max_features=5,
+                       max_leaf_nodes=None, max_samples=None,
+                       min_impurity_decrease=0.0, min_impurity_split=None,
+                       min_samples_leaf=1, min_samples_split=10,
+                       min_weight_fraction_leaf=0.0, n_estimators=10,
+                       n_jobs=None, oob_score=False, random_state=42, verbose=0,
+                       warm_start=False)
+Features: ['childsNumber', 'textLength', 'area', 'phash', 'chiSquared', 'imageDiff', 'width_comp', 'height_comp', 'left_visibility', 'right_visibility', 'left_comp', 'right_comp', 'y_comp']
+K: 3
+X dimensions:(8388, 13)
+Test     ROC: 0.911407
+Test      F1: 0.637679
+Test      F1: [0.54901961 0.63636364 0.69333333 0.69565217 0.50793651 0.59854015
+ 0.83636364 0.60273973 0.61818182 0.63865546]
+Test      Precision: [0.8        0.77777778 0.89655172 0.88888889 0.94117647 0.85416667
+ 0.92       0.81481481 0.94444444 0.84444444]
+Test      Recall: [0.41791045 0.53846154 0.56521739 0.57142857 0.34782609 0.46067416
+ 0.76666667 0.47826087 0.45945946 0.51351351]
+childsNumber: 0.024181
+textLength: 0.081610
+area: 0.061517
+phash: 0.047684
+chiSquared: 0.141291
+imageDiff: 0.203684
+width_comp: 0.063398
+height_comp: 0.246844
+left_visibility: 0.031935
+right_visibility: 0.032470
+left_comp: 0.017137
+right_comp: 0.025965
+y_comp: 0.022283

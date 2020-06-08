@@ -1,0 +1,13 @@
+running --- browserninja3-svm-internal-k3...
+Model: SVC(C=1, break_ties=False, cache_size=200, class_weight=None, coef0=0,
+    decision_function_shape='ovr', degree=1, gamma='scale', kernel='rbf',
+    max_iter=5000, probability=False, random_state=42, shrinking=True,
+    tol=0.001, verbose=False)
+Features: ['childsNumber', 'textLength', 'area', 'phash', 'chiSquared', 'imageDiff', 'width_comp', 'height_comp', 'left_visibility', 'right_visibility', 'left_comp', 'right_comp', 'y_comp', 'parent_x', 'parent_y', 'previous_sibling_x', 'previous_sibling_y', 'next_sibling_x', 'next_sibling_y', 'platform_id']
+K: 3
+X dimensions:(8388, 118)
+Test     ROC: 0.531499
+Test      F1: 0.111120
+Test      F1: [0.2597402597402597, 0.07407407407407407, 0.08333333333333333, 0.0, 0.0, 0.2641509433962264, 0.06451612903225806, 0.11538461538461539, 0.0, 0.25]
+Test      Precision: [1.0, 1.0, 1.0, 0.0, 0.0, 0.8235294117647058, 1.0, 0.5, 0.0, 0.7857142857142857]
+Test      Recall: [0.14925373134328357, 0.038461538461538464, 0.043478260869565216, 0.0, 0.0, 0.15730337078651685, 0.03333333333333333, 0.06521739130434782, 0.0, 0.14864864864864866]

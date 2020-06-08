@@ -1,0 +1,13 @@
+running --- crosscheck-svm-internal-k3...
+Model: SVC(C=1, break_ties=False, cache_size=200, class_weight=None, coef0=0,
+    decision_function_shape='ovr', degree=1, gamma='scale', kernel='sigmoid',
+    max_iter=5000, probability=False, random_state=42, shrinking=True,
+    tol=0.001, verbose=False)
+Features: ['area', 'displacement', 'sdr', 'chisquared']
+K: 3
+X dimensions:(8388, 4)
+Test     ROC: 0.550301
+Test      F1: 0.154033
+Test      F1: [0.45360824742268047, 0.07407407407407407, 0.03773584905660378, 0.0689655172413793, 0.0, 0.36974789915966383, 0.06451612903225806, 0.0, 0.052631578947368425, 0.41904761904761906]
+Test      Precision: [0.7333333333333333, 1.0, 0.14285714285714285, 1.0, 0.0, 0.7333333333333333, 1.0, 0.0, 1.0, 0.7096774193548387]
+Test      Recall: [0.3283582089552239, 0.038461538461538464, 0.021739130434782608, 0.03571428571428571, 0.0, 0.24719101123595505, 0.03333333333333333, 0.0, 0.02702702702702703, 0.2972972972972973]

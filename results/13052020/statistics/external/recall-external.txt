@@ -1,0 +1,101 @@
+[1] "============== Shapiro recall-External ==================="
+null device 
+          1 
+
+	Shapiro-Wilk normality test
+
+data:  recall_external[, "browserbite.randomforest.external.k3"]
+W = 0.922, p-value = 0.3739
+
+
+	Shapiro-Wilk normality test
+
+data:  recall_external[, "crosscheck.randomforest.external.k3"]
+W = 0.91385, p-value = 0.3085
+
+
+	Shapiro-Wilk normality test
+
+data:  recall_external[, "browserninja1.randomforest.external.k3"]
+W = 0.9084, p-value = 0.2702
+
+
+	Shapiro-Wilk normality test
+
+data:  recall_external[, "browserninja2.randomforest.external.k3"]
+W = 0.92735, p-value = 0.4223
+
+
+	Shapiro-Wilk normality test
+
+data:  recall_external[, "browserninja3.randomforest.external.k3"]
+W = 0.95353, p-value = 0.7103
+
+[1] "============== ANOVA recall-External =============="
+Call:
+   aov(formula = data$recall ~ data$classifiers)
+
+Terms:
+                data$classifiers Residuals
+Sum of Squares         0.4418665 0.8378294
+Deg. of Freedom                4        45
+
+Residual standard error: 0.1364494
+Estimated effects may be unbalanced
+                 Df Sum Sq Mean Sq F value   Pr(>F)    
+data$classifiers  4 0.4419 0.11047   5.933 0.000637 ***
+Residuals        45 0.8378 0.01862                     
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+[1] "======== Tukey HSD ======"
+  Tukey multiple comparisons of means
+    95% family-wise confidence level
+
+Fit: aov(formula = data$recall ~ data$classifiers)
+
+$`data$classifiers`
+                                                                                      diff
+browserninja1.randomforest.external.k3-browserbite.randomforest.external.k3    0.168621971
+browserninja2.randomforest.external.k3-browserbite.randomforest.external.k3    0.166010129
+browserninja3.randomforest.external.k3-browserbite.randomforest.external.k3    0.161160282
+crosscheck.randomforest.external.k3-browserbite.randomforest.external.k3      -0.048075908
+browserninja2.randomforest.external.k3-browserninja1.randomforest.external.k3 -0.002611843
+browserninja3.randomforest.external.k3-browserninja1.randomforest.external.k3 -0.007461689
+crosscheck.randomforest.external.k3-browserninja1.randomforest.external.k3    -0.216697880
+browserninja3.randomforest.external.k3-browserninja2.randomforest.external.k3 -0.004849846
+crosscheck.randomforest.external.k3-browserninja2.randomforest.external.k3    -0.214086037
+crosscheck.randomforest.external.k3-browserninja3.randomforest.external.k3    -0.209236191
+                                                                                       lwr
+browserninja1.randomforest.external.k3-browserbite.randomforest.external.k3   -0.004769034
+browserninja2.randomforest.external.k3-browserbite.randomforest.external.k3   -0.007380877
+browserninja3.randomforest.external.k3-browserbite.randomforest.external.k3   -0.012230723
+crosscheck.randomforest.external.k3-browserbite.randomforest.external.k3      -0.221466914
+browserninja2.randomforest.external.k3-browserninja1.randomforest.external.k3 -0.176002848
+browserninja3.randomforest.external.k3-browserninja1.randomforest.external.k3 -0.180852694
+crosscheck.randomforest.external.k3-browserninja1.randomforest.external.k3    -0.390088885
+browserninja3.randomforest.external.k3-browserninja2.randomforest.external.k3 -0.178240851
+crosscheck.randomforest.external.k3-browserninja2.randomforest.external.k3    -0.387477042
+crosscheck.randomforest.external.k3-browserninja3.randomforest.external.k3    -0.382627196
+                                                                                      upr
+browserninja1.randomforest.external.k3-browserbite.randomforest.external.k3    0.34201298
+browserninja2.randomforest.external.k3-browserbite.randomforest.external.k3    0.33940113
+browserninja3.randomforest.external.k3-browserbite.randomforest.external.k3    0.33455129
+crosscheck.randomforest.external.k3-browserbite.randomforest.external.k3       0.12531510
+browserninja2.randomforest.external.k3-browserninja1.randomforest.external.k3  0.17077916
+browserninja3.randomforest.external.k3-browserninja1.randomforest.external.k3  0.16592932
+crosscheck.randomforest.external.k3-browserninja1.randomforest.external.k3    -0.04330687
+browserninja3.randomforest.external.k3-browserninja2.randomforest.external.k3  0.16854116
+crosscheck.randomforest.external.k3-browserninja2.randomforest.external.k3    -0.04069503
+crosscheck.randomforest.external.k3-browserninja3.randomforest.external.k3    -0.03584519
+                                                                                  p adj
+browserninja1.randomforest.external.k3-browserbite.randomforest.external.k3   0.0601988
+browserninja2.randomforest.external.k3-browserbite.randomforest.external.k3   0.0665131
+browserninja3.randomforest.external.k3-browserbite.randomforest.external.k3   0.0797503
+crosscheck.randomforest.external.k3-browserbite.randomforest.external.k3      0.9328300
+browserninja2.randomforest.external.k3-browserninja1.randomforest.external.k3 0.9999992
+browserninja3.randomforest.external.k3-browserninja1.randomforest.external.k3 0.9999475
+crosscheck.randomforest.external.k3-browserninja1.randomforest.external.k3    0.0077360
+browserninja3.randomforest.external.k3-browserninja2.randomforest.external.k3 0.9999906
+crosscheck.randomforest.external.k3-browserninja2.randomforest.external.k3    0.0087277
+crosscheck.randomforest.external.k3-browserninja3.randomforest.external.k3    0.0108919
+

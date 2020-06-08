@@ -1,0 +1,42 @@
+running --- browserninja3-randomforest-external-k3...
+Model: RandomForestClassifier(bootstrap=True, ccp_alpha=0.0, class_weight=None,
+                       criterion='gini', max_depth=None, max_features=10,
+                       max_leaf_nodes=None, max_samples=None,
+                       min_impurity_decrease=0.0, min_impurity_split=None,
+                       min_samples_leaf=1, min_samples_split=10,
+                       min_weight_fraction_leaf=0.0, n_estimators=5,
+                       n_jobs=None, oob_score=False, random_state=42, verbose=0,
+                       warm_start=False)
+Features: ['childsNumber', 'textLength', 'area', 'phash', 'chiSquared', 'imageDiff', 'width_comp', 'height_comp', 'left_visibility', 'right_visibility', 'left_comp', 'right_comp', 'y_comp', 'parent_x', 'parent_y', 'previous_sibling_x', 'previous_sibling_y', 'next_sibling_x', 'next_sibling_y', 'platform_id']
+K: 3
+X dimensions:(8388, 118)
+Test     ROC: 0.860242
+Test      F1: 0.764993
+Test      F1: [0.9249999999999999, 0.75, 0.6166666666666667, 0.9047619047619047, 0.6296296296296297, 0.7999999999999999, 0.4171779141104295, 0.8571428571428572, 0.848, 0.9015544041450777]
+Test      Precision: [0.9024390243902439, 0.9, 0.9024390243902439, 0.8260869565217391, 0.8095238095238095, 0.9156626506024096, 0.3119266055045872, 0.9827586206896551, 0.9814814814814815, 0.9354838709677419]
+Test      Recall: [0.9487179487179487, 0.6428571428571429, 0.46835443037974683, 1.0, 0.5151515151515151, 0.7102803738317757, 0.6296296296296297, 0.76, 0.7464788732394366, 0.87]
+Best      F1: [0.9610389610389611, 0.896551724137931, 0.7555555555555556, 0.9268292682926829, 0.7936507936507938, 0.8431372549019608, 0.6875000000000001, 0.8823529411764706, 0.851063829787234, 0.9090909090909091]
+Best      Precision: [0.9736842105263158, 0.8666666666666667, 0.9107142857142857, 0.8636363636363636, 0.8333333333333334, 0.8865979381443299, 0.7857142857142857, 0.9836065573770492, 0.8571428571428571, 0.9183673469387755]
+Best      Recall: [0.9487179487179487, 0.9285714285714286, 0.6455696202531646, 1.0, 0.7575757575757576, 0.8037383177570093, 0.6111111111111112, 0.8, 0.8450704225352113, 0.9]
+Best     ROC: [0.9991596897790523, 0.9954938179651422, 0.9199874980465697, 0.9990569929863854, 0.9085644085644086, 0.952308492605817, 0.9487633342773528, 0.9525571504518873, 0.9837939587208786, 0.9676336633663367]
+Best     ROC: 0.962732
+childsNumber: 0.005509
+textLength: 0.018183
+area: 0.028160
+phash: 0.013641
+chiSquared: 0.029408
+imageDiff: 0.031990
+width_comp: 0.035967
+height_comp: 0.318769
+left_visibility: 0.069082
+right_visibility: 0.033254
+left_comp: 0.045743
+right_comp: 0.022381
+y_comp: 0.012674
+parent_x: 0.003240
+parent_y: 0.003032
+previous_sibling_x: 0.000000
+previous_sibling_y: 0.000001
+next_sibling_x: 0.001416
+next_sibling_y: 0.000000
+platform_id: 0.000000

@@ -1,0 +1,42 @@
+running --- browserninja2-randomforest-external-k3...
+Model: RandomForestClassifier(bootstrap=True, ccp_alpha=0.0, class_weight=None,
+                       criterion='gini', max_depth=10, max_features='auto',
+                       max_leaf_nodes=None, max_samples=None,
+                       min_impurity_decrease=0.0, min_impurity_split=None,
+                       min_samples_leaf=1, min_samples_split=10,
+                       min_weight_fraction_leaf=0.0, n_estimators=10,
+                       n_jobs=None, oob_score=False, random_state=42, verbose=0,
+                       warm_start=False)
+Features: ['childsNumber', 'textLength', 'area', 'phash', 'chiSquared', 'imageDiff', 'width_comp', 'height_comp', 'left_visibility', 'right_visibility', 'left_comp', 'right_comp', 'y_comp', 'parent_x', 'parent_y', 'previous_sibling_x', 'previous_sibling_y', 'next_sibling_x', 'next_sibling_y', 'platform_id']
+K: 3
+X dimensions:(8388, 20)
+Test     ROC: 0.901559
+Test      F1: 0.816997
+Test      F1: [0.9024390243902439, 0.7999999999999999, 0.681159420289855, 0.8444444444444443, 0.8064516129032258, 0.9073170731707317, 0.6964285714285714, 0.838235294117647, 0.8437499999999999, 0.849740932642487]
+Test      Precision: [0.8604651162790697, 0.75, 0.7966101694915254, 0.7307692307692307, 0.8620689655172413, 0.9489795918367347, 0.6724137931034483, 0.9344262295081968, 0.9473684210526315, 0.8817204301075269]
+Test      Recall: [0.9487179487179487, 0.8571428571428571, 0.5949367088607594, 1.0, 0.7575757575757576, 0.8691588785046729, 0.7222222222222222, 0.76, 0.7605633802816901, 0.82]
+Best      F1: [0.9135802469135802, 0.8571428571428572, 0.681159420289855, 0.8888888888888888, 0.8064516129032258, 0.9282296650717703, 0.7307692307692308, 0.8873239436619718, 0.887218045112782, 0.8823529411764707]
+Best      Precision: [0.8809523809523809, 0.7714285714285715, 0.7966101694915254, 0.9411764705882353, 0.8620689655172413, 0.9509803921568627, 0.76, 0.9402985074626866, 0.9516129032258065, 0.8653846153846154]
+Best      Recall: [0.9487179487179487, 0.9642857142857143, 0.5949367088607594, 0.8421052631578947, 0.7575757575757576, 0.9065420560747663, 0.7037037037037037, 0.84, 0.8309859154929577, 0.9]
+Best     ROC: [0.9984889834559106, 0.9743780723968419, 0.9523034026698249, 0.9992338068014381, 0.9515229515229515, 0.9934922696373152, 0.8636363636363636, 0.9932589048378523, 0.976592257950217, 0.9949683168316832]
+Best     ROC: 0.969788
+childsNumber: 0.003806
+textLength: 0.014519
+area: 0.031223
+phash: 0.007148
+chiSquared: 0.012605
+imageDiff: 0.031900
+width_comp: 0.030296
+height_comp: 0.340216
+left_visibility: 0.066663
+right_visibility: 0.054536
+left_comp: 0.079575
+right_comp: 0.050513
+y_comp: 0.027890
+parent_x: 0.031910
+parent_y: 0.012230
+previous_sibling_x: 0.053241
+previous_sibling_y: 0.021142
+next_sibling_x: 0.068161
+next_sibling_y: 0.043770
+platform_id: 0.018657

@@ -1,0 +1,46 @@
+running --- browserbite-randomforest-external-k3...
+Model: RandomForestClassifier(bootstrap=True, ccp_alpha=0.0, class_weight=None,
+                       criterion='gini', max_depth=10, max_features=10,
+                       max_leaf_nodes=None, max_samples=None,
+                       min_impurity_decrease=0.0, min_impurity_split=None,
+                       min_samples_leaf=5, min_samples_split=10,
+                       min_weight_fraction_leaf=0.0, n_estimators=5,
+                       n_jobs=None, oob_score=False, random_state=42, verbose=0,
+                       warm_start=False)
+Features: ['diff_height', 'diff_width', 'diff_x', 'diff_y', 'missmatch', 'base_bin1', 'base_bin2', 'base_bin3', 'base_bin4', 'base_bin5', 'base_bin6', 'base_bin7', 'base_bin8', 'base_bin9', 'base_bin10', 'target_bin1', 'target_bin2', 'target_bin3', 'target_bin4', 'target_bin5', 'target_bin6', 'target_bin7', 'target_bin8', 'target_bin9', 'target_bin10', 'platform_id']
+K: 3
+X dimensions:(8388, 26)
+Test     ROC: 0.936753
+Test      F1: 0.582684
+Test      F1: [0.86075949 0.47619048 0.30927835 0.57142857 0.35555556 0.8
+ 0.36619718 0.64566929 0.63716814 0.8045977 ]
+Test      Precision: [0.85       0.71428571 0.83333333 0.625      0.66666667 0.91566265
+ 0.76470588 0.78846154 0.85714286 0.94594595]
+Test      Recall: [0.87179487 0.35714286 0.18987342 0.52631579 0.24242424 0.71028037
+ 0.24074074 0.54666667 0.50704225 0.7       ]
+diff_height: 0.130939
+diff_width: 0.237336
+diff_x: 0.427658
+diff_y: 0.028772
+missmatch: 0.000000
+base_bin1: 0.013902
+base_bin2: 0.013004
+base_bin3: 0.003945
+base_bin4: 0.012535
+base_bin5: 0.005700
+base_bin6: 0.000058
+base_bin7: 0.000000
+base_bin8: 0.002535
+base_bin9: 0.000969
+base_bin10: 0.004298
+target_bin1: 0.049815
+target_bin2: 0.005986
+target_bin3: 0.002652
+target_bin4: 0.000000
+target_bin5: 0.001580
+target_bin6: 0.001767
+target_bin7: 0.000382
+target_bin8: 0.000000
+target_bin9: 0.000403
+target_bin10: 0.000289
+platform_id: 0.055478

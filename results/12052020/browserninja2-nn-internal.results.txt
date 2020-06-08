@@ -1,0 +1,17 @@
+running --- browserninja2-nn-internal-k3...
+Model: MLPClassifier(activation='tanh', alpha=0.01, batch_size='auto', beta_1=0.9,
+              beta_2=0.999, early_stopping=False, epsilon=1e-08,
+              hidden_layer_sizes=30, learning_rate='constant',
+              learning_rate_init=0.001, max_fun=15000, max_iter=1000,
+              momentum=0.9, n_iter_no_change=10, nesterovs_momentum=True,
+              power_t=0.5, random_state=42, shuffle=True, solver='adam',
+              tol=0.0001, validation_fraction=0.1, verbose=False,
+              warm_start=False)
+Features: ['childsNumber', 'textLength', 'area', 'phash', 'chiSquared', 'imageDiff', 'width_comp', 'height_comp', 'left_visibility', 'right_visibility', 'left_comp', 'right_comp', 'y_comp', 'parent_x', 'parent_y', 'previous_sibling_x', 'previous_sibling_y', 'next_sibling_x', 'next_sibling_y', 'platform_id']
+K: 3
+X dimensions:(8388, 20)
+Test     ROC: 0.742380
+Test      F1: 0.509122
+Test      F1: [0.5607476635514019, 0.608695652173913, 0.36496350364963503, 0.5454545454545454, 0.43076923076923074, 0.6040268456375838, 0.33898305084745756, 0.5116279069767442, 0.5, 0.6259541984732825]
+Test      Precision: [0.75, 0.7, 0.27472527472527475, 0.5555555555555556, 0.7368421052631579, 0.75, 0.22727272727272727, 0.55, 0.5925925925925926, 0.7192982456140351]
+Test      Recall: [0.44776119402985076, 0.5384615384615384, 0.5434782608695652, 0.5357142857142857, 0.30434782608695654, 0.5056179775280899, 0.6666666666666666, 0.4782608695652174, 0.43243243243243246, 0.5540540540540541]
