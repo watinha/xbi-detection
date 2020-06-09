@@ -131,6 +131,30 @@ class BrowserNinjaExtractorTest(TestCase):
                           'width_comp', 'height_comp',
                           'left_visibility', 'right_visibility'], result['features'])
 
+    def test_execute_extracts_visibility_comparison_and_concatenate_other_features(self):
+        arff_data = arff.load(self.generate_arff("""13,17,1,2,3,4,5,6,7,8,100,0.12,360,414,0.3,0
+0,0,100,150,20,15,10,15,20,33,1000,0.25,360,380,0.15,0""",
+            extractors=[ ComplexityExtractor(), ImageComparisonExtractor(), SizeViewportExtractor(), VisibilityExtractor() ]))
+        arff_data['data'] = np.array(arff_data['data'])
+        arff_data['X'] = np.array([[1, 7], [7, 7]])
+        arff_data['features'] = ['super', 'bash']
+        result = self.extractor.execute(arff_data)
+        # right = (354 - 360) - (406 - 414)
+        self.assertEqual(1, result['X'][0][0])
+        self.assertEqual(7, result['X'][0][1])
+        self.assertEqual(2, result['X'][0][10])
+        self.assertEqual(53, result['X'][0][11])
+        # right = (240 - 360) - (197 - 380)
+        self.assertEqual(7, result['X'][1][0])
+        self.assertEqual(7, result['X'][1][1])
+        self.assertEqual(63, result['X'][1][10])
+        self.assertEqual(-30, result['X'][1][11])
+        self.assertEqual(['super', 'bash',
+                          'childsNumber', 'textLength', 'area',
+                          'phash', 'chiSquared', 'imageDiff',
+                          'width_comp', 'height_comp',
+                          'left_visibility', 'right_visibility'], result['features'])
+
     def test_execute_comparison_based_on_viewport (self):
         arff_data = arff.load(self.generate_arff("""13,17,1,2,3,4,5,6,7,8,100,0.12,360,414,0.3,0
 0,0,100,150,20,15,10,15,20,33,1000,0.25,360,380,0.15,0""",

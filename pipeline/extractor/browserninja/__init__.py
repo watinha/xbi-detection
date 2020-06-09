@@ -9,7 +9,7 @@ class BrowserNinjaCompositeExtractor():
         self._class_attr = class_attr
 
     def execute(self, arff_data):
-        arff_data['features'] = []
+        arff_data['features'] = (arff_data['features'] if 'features' in arff_data else [])
 
         attributes = [ attribute[0]
                 for attribute in arff_data['attributes'] ]
