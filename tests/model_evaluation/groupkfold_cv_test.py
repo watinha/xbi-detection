@@ -13,7 +13,7 @@ class GroupKFoldCVTest(TestCase):
             'data': np.array([['abobrinha', 2], ['pepino', 3]]),
             'X': np.array([[1, 2, 3], [4, 5, 6]]),
             'y': np.array([1, 2]),
-            'model': Mock()
+            'model': {}
         }
         score_stub = {}
         folds_stub = {}
@@ -21,10 +21,13 @@ class GroupKFoldCVTest(TestCase):
         cross_val_score_mock.return_value = score_stub
         action = GroupKFoldCV(folds_stub, 'URL', cross_val_score_mock)
         result = action.execute(args)
-        cross_val_score_mock.assert_called_with(
-                args['model'], args['X'], args['y'],
-                cv=folds_stub, groups=['abobrinha', 'pepino'], scoring=['f1_macro', 'precision_macro', 'recall_macro'])
-
+        [(model, X, y), keyed_args] = cross_val_score_mock.call_args
+        self.assertEqual(args['model'], model)
+        np.testing.assert_array_equal(args['X'], X)
+        np.testing.assert_array_equal(args['y'], y)
+        self.assertEqual(folds_stub, keyed_args['cv'])
+        self.assertEqual(['abobrinha', 'pepino'], keyed_args['groups'])
+        self.assertEqual(['f1', 'precision', 'recall', 'roc_auc'], keyed_args['scoring'])
         self.assertEqual(score_stub, result['score'])
 
     def test_cross_val_score_is_called_with_different_groups (self):
@@ -41,8 +44,11 @@ class GroupKFoldCVTest(TestCase):
         cross_val_score_mock.return_value = score_stub
         action = GroupKFoldCV(folds_stub, 'id', cross_val_score_mock)
         result = action.execute(args)
-        cross_val_score_mock.assert_called_with(
-                args['model'], args['X'], args['y'],
-                cv=folds_stub, groups=['2', '3', '4'], scoring=['f1_macro', 'precision_macro', 'recall_macro'])
-
+        [(model, X, y), keyed_args] = cross_val_score_mock.call_args
+        self.assertEqual(args['model'], model)
+        np.testing.assert_array_equal(args['X'], X)
+        np.testing.assert_array_equal(args['y'], y)
+        self.assertEqual(folds_stub, keyed_args['cv'])
+        self.assertEqual(['2', '3', '4'], keyed_args['groups'])
+        self.assertEqual(['f1', 'precision', 'recall', 'roc_auc'], keyed_args['scoring'])
         self.assertEqual(score_stub, result['score'])
