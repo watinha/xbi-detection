@@ -7,14 +7,16 @@ class BrowserbiteExtractor ():
         self._class_attr = class_attr
 
     def execute (self, arff_dataset):
-        arff_dataset['features'] = [
+        prev_features = (arff_dataset['features'] if 'features' in arff_dataset else [])
+        arff_dataset['features'] = prev_features + [
                 'diff_height', 'diff_width', 'diff_x', 'diff_y',
                 'missmatch', # 'correlation'
                 'base_bin1', 'base_bin2', 'base_bin3', 'base_bin4', 'base_bin5',
                 'base_bin6', 'base_bin7', 'base_bin8', 'base_bin9', 'base_bin10',
                 'target_bin1', 'target_bin2', 'target_bin3', 'target_bin4', 'target_bin5',
                 'target_bin6', 'target_bin7', 'target_bin8', 'target_bin9', 'target_bin10']
-        X_t = []
+
+        X_t = (arff_dataset['X'].T.tolist() if 'X' in arff_dataset else [])
 
         attributes = [ attr[0] for attr in arff_dataset['attributes'] ]
         data = arff_dataset['data']
