@@ -9,7 +9,7 @@ class CrossCheckExtractor():
         attributes = [ attribute[0] for attribute in arff_data['attributes'] ]
         dataset = arff_data['data']
 
-        X = []
+        X = (arff_data['X'].T.tolist() if 'X' in arff_data else [])
 
         base_height = np.array(dataset[:,attributes.index('baseHeight')], dtype='float64')
         target_height = np.array(dataset[:,attributes.index('targetHeight')], dtype='float64')
@@ -34,6 +34,7 @@ class CrossCheckExtractor():
         X.append(dataset[:,attributes.index('chiSquared')])
 
         arff_data['X'] = np.array(X, dtype='float64').T
-        arff_data['features'] = ['area', 'displacement', 'sdr', 'chisquared']
+        prev_features = (arff_data['features'] if 'features' in arff_data else [])
+        arff_data['features'] = prev_features + ['area', 'displacement', 'sdr', 'chisquared']
         arff_data['y'] = np.array(arff_data['data'][:,attributes.index(self._class_attr)], dtype='int16')
         return arff_data

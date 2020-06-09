@@ -120,3 +120,46 @@ class CrossCheckExtractorTest(TestCase):
         self.assertEqual(2, len(result['y']))
         self.assertEqual(0, result['y'][0])
         self.assertEqual(1, result['y'][1])
+
+    def test_calculate_single_features_and_concatenate_with_existing_features (self):
+        arff_data = arff.load("""@RELATION crosscheck
+@ATTRIBUTE baseX NUMERIC
+@ATTRIBUTE targetX NUMERIC
+@ATTRIBUTE baseY NUMERIC
+@ATTRIBUTE targetY NUMERIC
+@ATTRIBUTE baseHeight NUMERIC
+@ATTRIBUTE targetHeight NUMERIC
+@ATTRIBUTE baseWidth NUMERIC
+@ATTRIBUTE targetWidth NUMERIC
+@ATTRIBUTE chiSquared NUMERIC
+@ATTRIBUTE xbi {0,1}
+@DATA
+1,2,3,4,5,6,7,8,9,0
+10,12,12,14,14,16,16,18,33,1""")
+        arff_data['data'] = np.array(arff_data['data'])
+        arff_data['X'] = np.array([[1, 2], [3, 4]])
+        arff_data['features'] = ['something', 'other']
+        extractor = CrossCheckExtractor(class_attr='xbi')
+        result = extractor.execute(arff_data)
+        self.assertEqual(2, len(result['X']))
+        self.assertEqual(['something', 'other', 'area', 'displacement', 'sdr', 'chisquared'], result['features'])
+        self.assertEqual(6, len(result['X'][0]))
+        self.assertEqual(1, result['X'][0][0])
+        self.assertEqual(2, result['X'][0][1])
+        self.assertEqual(35, result['X'][0][2])
+        self.assertAlmostEqual(math.sqrt(2), result['X'][0][3], places=2)
+        self.assertAlmostEqual((48-35)/35, result['X'][0][4], places=2)
+        self.assertEqual(9, result['X'][0][5])
+
+        self.assertEqual(6, len(result['X'][1]))
+        self.assertEqual(3, result['X'][1][0])
+        self.assertEqual(4, result['X'][1][1])
+        self.assertEqual(224, result['X'][1][2])
+        self.assertAlmostEqual(2*math.sqrt(2), result['X'][1][3], places=2)
+        self.assertAlmostEqual((16*18-14*16) / (14*16), result['X'][1][4], places=2)
+        self.assertEqual(33, result['X'][1][5])
+
+        self.assertEqual(2, len(result['y']))
+        self.assertEqual(0, result['y'][0])
+        self.assertEqual(1, result['y'][1])
+        self.assertEqual(arff_data['attributes'], result['attributes'])
