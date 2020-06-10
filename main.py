@@ -176,6 +176,7 @@ def cross_val_score_using_sampling(model, X, y, cv, groups, scoring):
         for i in range(len(precision2)):
             new_fscore = 2 * precision2[i] * recall2[i] / (precision2[i] + recall2[i])
             if new_fscore > best_f:
+                best_f = new_fscore
                 threshold = threasholds[i]
 
         y_pred = model.predict_proba(X_test)
@@ -211,20 +212,20 @@ print('Test      F1: %f' % (reduce(lambda x,y: x+y, result['score']['test_f1']) 
 print('Test      F1: ' + str(result['score']['test_f1']))
 print('Test      Precision: ' + str(result['score']['test_precision']))
 print('Test      Recall: ' + str(result['score']['test_recall']))
-#print('Best      F1: ' + str(result['score']['best_f1']))
-#print('Best      F1: %f' % (reduce(lambda x,y: x+y, result['score']['best_f1']) / 10))
-#print('Best      Precision: ' + str(result['score']['best_precision']))
-#print('Best      Recall: ' + str(result['score']['best_recall']))
-#print('Best     ROC: ' + str(result['score']['best_roc']))
-#print('Best     ROC: %f' % (reduce(lambda x, y: x+y, result['score']['best_roc']) / 10))
+print('Best      F1: ' + str(result['score']['best_f1']))
+print('Best      F1: %f' % (reduce(lambda x,y: x+y, result['score']['best_f1']) / 10))
+print('Best      Precision: ' + str(result['score']['best_precision']))
+print('Best      Recall: ' + str(result['score']['best_recall']))
+print('Best     ROC: ' + str(result['score']['best_roc']))
+print('Best     ROC: %f' % (reduce(lambda x, y: x+y, result['score']['best_roc']) / 10))
 if k == 3 and (classifier_name == 'dt' or classifier_name == 'randomforest'):
     result['model'].fit(result['X'], result['y'])
     for i in range(len(result['features'])):
         print('%s: %f' % (result['features'][i], result['model'].feature_importances_[i]))
 
-fscore = result['score']['test_f1']
-precision = result['score']['test_precision']
-recall = result['score']['test_recall']
+fscore = result['score']['best_f1']
+precision = result['score']['best_precision']
+recall = result['score']['best_recall']
 roc = result['score']['test_roc_auc']
 fscore_csv = pd.read_csv('results/fscore-%s.csv' % (class_attr), index_col=0)
 precision_csv = pd.read_csv('results/precision-%s.csv' % (class_attr), index_col=0)
