@@ -72,27 +72,24 @@ else:
 
 classifier = None
 if classifier_name == 'randomforest':
-    if extractor_name == 'crosscheck':
-        classifier = ClassifierTunning(GridSearchCV(ensemble.RandomForestClassifier(), {
-                'n_estimators': [5, 10, 15],
-                'criterion': ["gini", "entropy"],
-                'max_depth': [5, 10, None], #'max_depth': [5, 10, 30, 50, None],
-                'min_samples_split': [3, 10, 30], #'min_samples_split': [2, 3, 10, 30],
-                'min_samples_leaf': [1, 5, 10],
-                'class_weight': [None, 'balanced']
-            }, cv=GroupShuffleSplit(n_splits=3, random_state=42)),
-            ensemble.RandomForestClassifier(random_state=42), 'URL')
-    else:
-        classifier = ClassifierTunning(GridSearchCV(ensemble.RandomForestClassifier(), {
-                'n_estimators': [5, 10, 15],
-                'criterion': ["gini", "entropy"],
-                'max_depth': [5, 10, None], #'max_depth': [5, 10, 30, 50, None],
-                'min_samples_split': [3, 10, 30], #'min_samples_split': [2, 3, 10, 30],
-                'min_samples_leaf': [1, 5, 10],
-                'max_features': [3, 5, 10, 'auto'],
-                'class_weight': [None, 'balanced']
-            }, cv=GroupShuffleSplit(n_splits=3, random_state=42)),
-            ensemble.RandomForestClassifier(random_state=42), 'URL')
+    max_features = ['auto']
+    if extractor_name != 'crosscheck':
+        if (k >= 10):
+            max_features = max_features + [10]
+        if (k >= 5):
+            max_features = max_features + [5]
+        if (k >= 3):
+            max_features = max_features + [3]
+    classifier = ClassifierTunning(GridSearchCV(ensemble.RandomForestClassifier(), {
+            'n_estimators': [5, 10, 15],
+            'criterion': ["gini", "entropy"],
+            'max_depth': [5, 10, None], #'max_depth': [5, 10, 30, 50, None],
+            'min_samples_split': [3, 10, 30], #'min_samples_split': [2, 3, 10, 30],
+            'min_samples_leaf': [1, 5, 10],
+            'max_features': max_features,
+            'class_weight': [None, 'balanced']
+        }, cv=GroupShuffleSplit(n_splits=3, random_state=42)),
+        ensemble.RandomForestClassifier(random_state=42), 'URL')
 elif classifier_name == 'svm':
     classifier = ClassifierTunning(GridSearchCV(svm.SVC(), {
     #classifier = ClassifierTunning(GridSearchCV(svm.LinearSVC(), {
@@ -108,26 +105,23 @@ elif classifier_name == 'svm':
         svm.SVC(random_state=42, probability=True), 'URL')
         #svm.LinearSVC(random_state=42), 'URL')
 elif classifier_name == 'dt':
-    if extractor_name == 'crosscheck':
-        classifier = ClassifierTunning(GridSearchCV(tree.DecisionTreeClassifier(), {
-                'criterion': ["gini", "entropy"],
-                'max_depth': [5, 10, None],
-                'min_samples_split': [10, 30, 50],
-                'class_weight': [None, 'balanced'],
-                #'max_features': [5, 10, None],
-                'min_samples_leaf': [1, 5, 10]
-            }, cv=GroupShuffleSplit(n_splits=3, random_state=42)),
-            tree.DecisionTreeClassifier(random_state=42), 'URL')
-    else:
-        classifier = ClassifierTunning(GridSearchCV(tree.DecisionTreeClassifier(), {
-                'criterion': ["gini", "entropy"],
-                'max_depth': [5, 10, None],
-                'min_samples_split': [10, 30, 50],
-                'class_weight': [None, 'balanced'],
-                'max_features': [3, 5, 10, None],
-                'min_samples_leaf': [1, 5, 10]
-            }, cv=GroupShuffleSplit(n_splits=3, random_state=42)),
-            tree.DecisionTreeClassifier(random_state=42), 'URL')
+    max_features = ['auto']
+    if extractor_name != 'crosscheck':
+        if (k >= 10):
+            max_features = max_features + [10]
+        if (k >= 5):
+            max_features = max_features + [5]
+        if (k >= 3):
+            max_features = max_features + [3]
+    classifier = ClassifierTunning(GridSearchCV(tree.DecisionTreeClassifier(), {
+            'criterion': ["gini", "entropy"],
+            'max_depth': [5, 10, None],
+            'min_samples_split': [10, 30, 50],
+            'class_weight': [None, 'balanced'],
+            'max_features': max_features,
+            'min_samples_leaf': [1, 5, 10]
+        }, cv=GroupShuffleSplit(n_splits=3, random_state=42)),
+        tree.DecisionTreeClassifier(random_state=42), 'URL')
 else:
     classifier = ClassifierTunning(GridSearchCV(MLPClassifier(), {
             'hidden_layer_sizes': [5, 10, 30],
@@ -196,12 +190,13 @@ groupcv = None
 groupcv = GroupKFoldCV(GroupShuffleSplit(n_splits=10, random_state=42), 'URL', cross_val_score_using_sampling)
 
 preprocessor = Preprocessor()
-selector = FeatureSelection(SelectKBest(f_classif, k=k), k=k)
+selectkbest = SelectKBest(f_classif, k=k)
+selector = FeatureSelection(selectkbest, k=k)
 approach = '%s-%s-%s-k%s' % (extractor_name, classifier_name, class_attr, str(k))
 
 print('running --- %s...' % (approach))
 pipeline = Pipeline([
-    ArffLoader(), extractor, preprocessor, classifier, groupcv])
+    ArffLoader(), extractor, preprocessor, selector, classifier, groupcv])
 result = pipeline.execute(open('data/07042020/07042020-dataset.binary.hist.arff').read())
 print('Model: ' + str(result['model']))
 print('Features: ' + str(result['features']))
@@ -218,10 +213,22 @@ print('Best      Precision: ' + str(result['score']['best_precision']))
 print('Best      Recall: ' + str(result['score']['best_recall']))
 print('Best     ROC: ' + str(result['score']['best_roc']))
 print('Best     ROC: %f' % (reduce(lambda x, y: x+y, result['score']['best_roc']) / 10))
-if k == 3 and (classifier_name == 'dt' or classifier_name == 'randomforest'):
-    result['model'].fit(result['X'], result['y'])
-    for i in range(len(result['features'])):
-        print('%s: %f' % (result['features'][i], result['model'].feature_importances_[i]))
+
+try:
+    sorted_scores = selectkbest.scores_.tolist().copy()
+    sorted_scores.sort()
+    sorted_scores = set(sorted_scores)
+    for i in sorted_scores:
+        for j in range(len(selectkbest.scores_)):
+            if selectkbest.scores_[j] == i:
+                print('Feature %d %s: %f' % (j, result['features'][j], i))
+except:
+    print('did not run SelectKBest...')
+
+#if k == 3 and (classifier_name == 'dt' or classifier_name == 'randomforest'):
+#    result['model'].fit(result['X'], result['y'])
+#    for i in range(len(result['features'])):
+#        print('%s: %f' % (result['features'][i], result['model'].feature_importances_[i]))
 
 fscore = result['score']['best_f1']
 precision = result['score']['best_precision']
