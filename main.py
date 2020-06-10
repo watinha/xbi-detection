@@ -164,20 +164,25 @@ def cross_val_score_using_sampling(model, X, y, cv, groups, scoring):
         recall.append(metrics.recall_score(y_test, y_pred))
         roc.append(metrics.roc_auc_score(y_test, y_pred))
 
-        y_pred = model.predict_proba(X_test)
+        y_pred = model.predict_proba(X_train)
         probability = y_pred[:,1]
 
-        best_roc.append(metrics.roc_auc_score(y_test, probability))
-        precision2, recall2, threasholds = metrics.precision_recall_curve(y_test, probability)
+        best_roc.append(metrics.roc_auc_score(y_train, probability))
+        precision2, recall2, threasholds = metrics.precision_recall_curve(y_train, probability)
         best_f = 0
         best_r = 0
         best_p = 0
+        threashold = 0
         for i in range(len(precision2)):
             new_fscore = 2 * precision2[i] * recall2[i] / (precision2[i] + recall2[i])
             if new_fscore > best_f:
-                best_f = new_fscore
-                best_r = recall2[i]
-                best_p = precision2[i]
+                threshold = threasholds[i]
+
+        y_pred = model.predict_proba(X_test)
+        y_pred = [ 0 if y < threshold else 1 for y in y_pred[:,1]]
+        best_f = metrics.f1_score(y_test, y_pred)
+        best_p = metrics.precision_score(y_test, y_pred)
+        best_r = metrics.recall_score(y_test, y_pred)
 
         best_fscore.append(best_f)
         best_precision.append(best_p)
@@ -206,20 +211,21 @@ print('Test      F1: %f' % (reduce(lambda x,y: x+y, result['score']['test_f1']) 
 print('Test      F1: ' + str(result['score']['test_f1']))
 print('Test      Precision: ' + str(result['score']['test_precision']))
 print('Test      Recall: ' + str(result['score']['test_recall']))
-print('Best      F1: ' + str(result['score']['best_f1']))
-print('Best      Precision: ' + str(result['score']['best_precision']))
-print('Best      Recall: ' + str(result['score']['best_recall']))
-print('Best     ROC: ' + str(result['score']['best_roc']))
-print('Best     ROC: %f' % (reduce(lambda x, y: x+y, result['score']['best_roc']) / 10))
+#print('Best      F1: ' + str(result['score']['best_f1']))
+#print('Best      F1: %f' % (reduce(lambda x,y: x+y, result['score']['best_f1']) / 10))
+#print('Best      Precision: ' + str(result['score']['best_precision']))
+#print('Best      Recall: ' + str(result['score']['best_recall']))
+#print('Best     ROC: ' + str(result['score']['best_roc']))
+#print('Best     ROC: %f' % (reduce(lambda x, y: x+y, result['score']['best_roc']) / 10))
 if k == 3 and (classifier_name == 'dt' or classifier_name == 'randomforest'):
     result['model'].fit(result['X'], result['y'])
     for i in range(len(result['features'])):
         print('%s: %f' % (result['features'][i], result['model'].feature_importances_[i]))
 
-fscore = result['score']['best_f1']
-precision = result['score']['best_precision']
-recall = result['score']['best_recall']
-roc = result['score']['best_roc']
+fscore = result['score']['test_f1']
+precision = result['score']['test_precision']
+recall = result['score']['test_recall']
+roc = result['score']['test_roc_auc']
 fscore_csv = pd.read_csv('results/fscore-%s.csv' % (class_attr), index_col=0)
 precision_csv = pd.read_csv('results/precision-%s.csv' % (class_attr), index_col=0)
 recall_csv = pd.read_csv('results/recall-%s.csv' % (class_attr), index_col=0)

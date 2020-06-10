@@ -20,7 +20,7 @@ class BrowserNinjaCompositeExtractor():
             X = extractor.execute(arff_data, attributes, X)
 
         arff_data['X'] = np.array(X, dtype='float64').T
-        arff_data['y'] = np.array(arff_data['data'][:, attributes.index(self._class_attr)])
+        arff_data['y'] = np.array(arff_data['data'][:, attributes.index(self._class_attr)], dtype='float64')
 
         return arff_data
 

@@ -3,7 +3,7 @@ import random, arff, sys
 from imblearn.under_sampling import TomekLinks, ClusterCentroids
 from sklearn import tree, svm, ensemble, metrics
 from sklearn.neural_network import MLPClassifier
-from sklearn.feature_selection import SelectKBest, chi2, f_classif
+from sklearn.feature_selection import SelectKBest, chi2, f_classif, RFECV
 from sklearn.model_selection import GridSearchCV,GroupKFold,GroupShuffleSplit,cross_validate
 from functools import reduce
 
@@ -57,22 +57,49 @@ def cross_val_score_using_sampling(model, X, y, cv, groups, scoring):
     precision = []
     recall = []
     roc = []
+    best_roc = []
+    best_fscore = []
+    best_recall = []
+    best_precision = []
     for train_index, test_index in cv.split(X, y, groups):
         X_train, X_test = X[train_index], X[test_index]
         y_train, y_test = y[train_index], y[test_index]
         X_samp, y_samp = sampler.fit_sample(X_train, y_train)
         model.fit(X_samp, y_samp)
         y_pred = model.predict(X_test)
+
         fscore.append(metrics.f1_score(y_test, y_pred))
         precision.append(metrics.precision_score(y_test, y_pred))
         recall.append(metrics.recall_score(y_test, y_pred))
         roc.append(metrics.roc_auc_score(y_test, y_pred))
-    return { 'test_f1': fscore, 'test_precision': precision, 'test_recall': recall, 'test_roc_auc': roc }
 
+        y_pred = model.predict_proba(X_test)
+        probability = y_pred[:,1]
+
+        best_roc.append(metrics.roc_auc_score(y_test, probability))
+        precision2, recall2, threasholds = metrics.precision_recall_curve(y_test, probability)
+        best_f = 0
+        best_r = 0
+        best_p = 0
+        for i in range(len(precision2)):
+            new_fscore = 2 * precision2[i] * recall2[i] / (precision2[i] + recall2[i])
+            if new_fscore > best_f:
+                best_f = new_fscore
+                best_r = recall2[i]
+                best_p = precision2[i]
+
+        best_fscore.append(best_f)
+        best_precision.append(best_p)
+        best_recall.append(best_r)
+
+    return { 'test_f1': fscore, 'test_precision': precision, 'test_recall': recall, 'test_roc_auc': roc,
+            'best_f1': best_fscore, 'best_precision': best_precision, 'best_recall': best_recall, 'best_roc': best_roc }
+
+rfecv = RFECV(ensemble.RandomForestClassifier(), scoring='f1_macro')
 random.seed(42)
 pipeline = Pipeline([
     ArffLoader(),
-    #XBIExtractor(features, 'internal'),
+    XBIExtractor(features, 'internal'),
     CrossCheckExtractor('internal'),
     BrowserbiteExtractor('internal'),
     BrowserNinjaCompositeExtractor('internal',
@@ -87,6 +114,7 @@ pipeline = Pipeline([
             PlatformExtractor()
         ]),
     Preprocessor(),
+    FeatureSelection(rfecv),
     #FeatureSelection(SelectKBest(f_classif, k=8), k=8),
     ClassifierTunning(GridSearchCV(ensemble.RandomForestClassifier(), {
             'n_estimators': [2, 5, 10, 15],
@@ -146,6 +174,16 @@ print('Test      Precision: ' + str(result['score']['test_precision']))
 #print('Trainning Recall: ' + str(result['score']['train_recall_macro']))
 print('Test      Recall: ' + str(result['score']['test_recall']))
 print('Test     ROC AUC: ' + str(result['score']['test_roc_auc']))
+#print(' === BEST === ')
+#print('Best      F1: ' + str(result['score']['best_f1']))
+#print('Best      Precision: ' + str(result['score']['best_precision']))
+#print('Best      Recall: ' + str(result['score']['best_recall']))
+#print('Best     ROC: ' + str(result['score']['best_roc']))
+#print('Best     ROC: %f' % (reduce(lambda x, y: x+y, result['score']['best_roc']) / 10))
+
+print(' --- Features RFECV with %d features --- ' % (rfecv.n_features_))
+for i in range(len(result['features'])):
+    print('%s -> %d' % (result['features'][i], rfecv.ranking_[i]))
 
 #print('--- Error analysis ---')
 #model = result['model']
