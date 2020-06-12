@@ -27,6 +27,8 @@ from pipeline.model_evaluation.groupkfold_cv import GroupKFoldCV
 
 assert len(sys.argv) == 5, 'The script accepts 4 parameters: feature extractor (browserbite|crosscheck|browserninja1|browserninja2), classifier (randomforest|svm|dt|nn), type of xbi (internal|external) and K value'
 
+random.seed(42)
+
 class_attr = sys.argv[3]
 k = int(sys.argv[4])
 extractor_name = sys.argv[1]
@@ -195,8 +197,57 @@ selector = FeatureSelection(selectkbest, k=k)
 approach = '%s-%s-%s-k%s' % (extractor_name, classifier_name, class_attr, str(k))
 
 print('running --- %s...' % (approach))
-pipeline = Pipeline([
-    ArffLoader(), extractor, preprocessor, selector, classifier, groupcv])
+if extractor_name == 'all':
+    features = [
+        #'URL', 'id', 'tagName',
+        #'childsNumber', 'textLength',
+        #'basePlatform', 'targetPlatform', 'baseBrowser', 'targetBrowser',
+        #'baseDPI', 'targetDPI',
+        #'baseScreenshot', 'targetScreenshot',
+        #'baseX', 'targetX', 'baseY', 'targetY',
+        #'baseHeight', 'targetHeight', 'baseWidth', 'targetWidth',
+        #'baseParentX', 'targetParentX', 'baseParentY', 'targetParentY',
+        #'imageDiff', 'chiSquared',
+        #'baseDeviceWidth', 'targetDeviceWidth', 'baseViewportWidth', 'targetViewportWidth',
+        #'xpath', 'baseXpath', 'targetXpath',
+        #'phash',
+        #'basePreviousSiblingLeft', 'targetPreviousSiblingLeft',
+        #'basePreviousSiblingTop', 'targetPreviousSiblingTop',
+        #'baseNextSiblingLeft', 'targetNextSiblingLeft',
+        #'baseNextSiblingTop', 'targetNextSiblingTop',
+        #'baseTextNodes', 'targetTextNodes',
+        #'baseFontFamily', 'targetFontFamily',
+        #'base_bin1', 'base_bin2', 'base_bin3', 'base_bin4', 'base_bin5',
+        #'base_bin6', 'base_bin7', 'base_bin8', 'base_bin9', 'base_bin10',
+        #'target_bin1', 'target_bin2', 'target_bin3', 'target_bin4', 'target_bin5',
+        #'target_bin6', 'target_bin7', 'target_bin8', 'target_bin9', 'target_bin10',
+        'diff_bin01', 'diff_bin02', 'diff_bin03', 'diff_bin04', 'diff_bin05',
+        'diff_bin11', 'diff_bin12', 'diff_bin13', 'diff_bin14', 'diff_bin15',
+        'diff_bin21', 'diff_bin22', 'diff_bin23', 'diff_bin24', 'diff_bin25',
+        'diff_bin31', 'diff_bin32', 'diff_bin33', 'diff_bin34', 'diff_bin35',
+        'diff_bin41', 'diff_bin42', 'diff_bin43', 'diff_bin44', 'diff_bin45'
+    ]
+    print('Runnin with everything...')
+    pipeline = Pipeline([
+        ArffLoader(),
+        #XBIExtractor(features, class_attr),
+        BrowserbiteExtractor(class_attr),
+        CrossCheckExtractor(class_attr),
+        BrowserNinjaCompositeExtractor(class_attr,
+            extractors=[
+                ComplexityExtractor(),
+                ImageComparisonExtractor(),
+                SizeViewportExtractor(),
+                VisibilityExtractor(),
+                PositionViewportExtractor(),
+                RelativePositionExtractor()
+                #PlatformExtractor(),
+                #FontFamilyExtractor()
+            ]),
+        preprocessor, selector, classifier, groupcv])
+else:
+    pipeline = Pipeline([
+        ArffLoader(), extractor, preprocessor, selector, classifier, groupcv])
 result = pipeline.execute(open('data/07042020/07042020-dataset.binary.hist.arff').read())
 print('Model: ' + str(result['model']))
 print('Features: ' + str(result['features']))
@@ -217,11 +268,18 @@ print('Best     ROC: %f' % (reduce(lambda x, y: x+y, result['score']['best_roc']
 try:
     sorted_scores = selectkbest.scores_.tolist().copy()
     sorted_scores.sort()
-    sorted_scores = set(sorted_scores)
+    last = None
     for i in sorted_scores:
+        if (i == last):
+            last = None
+            continue
         for j in range(len(selectkbest.scores_)):
             if selectkbest.scores_[j] == i:
-                print('Feature %d %s: %f' % (j, result['features'][j], i))
+                if len(result['features']) <= j:
+                    print('Feature %d FONT: %f' % (j, i))
+                else:
+                    print('Feature %d %s: %f' % (j, result['features'][j], i))
+        last = i
 except:
     print('did not run SelectKBest...')
 
