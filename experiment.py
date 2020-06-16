@@ -43,11 +43,12 @@ features = [
     #'base_bin6', 'base_bin7', 'base_bin8', 'base_bin9', 'base_bin10',
     #'target_bin1', 'target_bin2', 'target_bin3', 'target_bin4', 'target_bin5',
     #'target_bin6', 'target_bin7', 'target_bin8', 'target_bin9', 'target_bin10',
-    'diff_bin01', 'diff_bin02', 'diff_bin03', 'diff_bin04', 'diff_bin05',
-    'diff_bin11', 'diff_bin12', 'diff_bin13', 'diff_bin14', 'diff_bin15',
-    'diff_bin21', 'diff_bin22', 'diff_bin23', 'diff_bin24', 'diff_bin25',
-    'diff_bin31', 'diff_bin32', 'diff_bin33', 'diff_bin34', 'diff_bin35',
-    'diff_bin41', 'diff_bin42', 'diff_bin43', 'diff_bin44', 'diff_bin45'
+    #'diff_bin01', 'diff_bin02', 'diff_bin03', 'diff_bin04', 'diff_bin05',
+    #'diff_bin11', 'diff_bin12', 'diff_bin13', 'diff_bin14', 'diff_bin15',
+    #'diff_bin21', 'diff_bin22', 'diff_bin23', 'diff_bin24', 'diff_bin25',
+    #'diff_bin31', 'diff_bin32', 'diff_bin33', 'diff_bin34', 'diff_bin35',
+    #'diff_bin41', 'diff_bin42', 'diff_bin43', 'diff_bin44', 'diff_bin45',
+    'emd', 'ssim', 'mse'#, 'psnr'
 ]
 
 sampler = TomekLinks()
@@ -100,8 +101,8 @@ random.seed(42)
 pipeline = Pipeline([
     ArffLoader(),
     XBIExtractor(features, 'internal'),
-    CrossCheckExtractor('internal'),
-    BrowserbiteExtractor('internal'),
+    #CrossCheckExtractor('internal'),
+    #BrowserbiteExtractor('internal'),
     BrowserNinjaCompositeExtractor('internal',
         extractors=[
             ComplexityExtractor(),
@@ -109,9 +110,9 @@ pipeline = Pipeline([
             SizeViewportExtractor(),
             VisibilityExtractor(),
             PositionViewportExtractor(),
-            FontFamilyExtractor(),
-            RelativePositionExtractor(),
-            PlatformExtractor()
+            #FontFamilyExtractor(),
+            #RelativePositionExtractor(),
+            #PlatformExtractor()
         ]),
     Preprocessor(),
     FeatureSelection(rfecv),
@@ -161,7 +162,7 @@ pipeline = Pipeline([
     #    MLPClassifier(random_state=42), 'URL'),
     GroupKFoldCV(GroupShuffleSplit(n_splits=10), 'URL', cross_val_score_using_sampling)
 ])
-result = pipeline.execute(open('data/07042020/07042020-dataset.binary.hist.arff').read())
+result = pipeline.execute(open('data/07042020/07042020-dataset.binary.hist.img.arff').read())
 print('Model: ' + str(result['model']))
 print('Features: ' + str(result['features']))
 print('X dimensions:' + str(result['X'].shape))

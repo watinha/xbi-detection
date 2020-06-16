@@ -8,7 +8,7 @@ from sklearn import tree, svm, ensemble
 from sklearn import metrics
 from sklearn.calibration import CalibratedClassifierCV
 from sklearn.neural_network import MLPClassifier
-from sklearn.feature_selection import SelectKBest, chi2, f_classif
+from sklearn.feature_selection import SelectKBest, chi2, f_classif, RFECV
 from sklearn.model_selection import GridSearchCV,GroupKFold,GroupShuffleSplit,cross_validate
 from functools import reduce
 
@@ -33,6 +33,7 @@ class_attr = sys.argv[3]
 k = int(sys.argv[4])
 extractor_name = sys.argv[1]
 classifier_name = sys.argv[2]
+features = []
 
 extractor = None
 if extractor_name == 'browserbite':
@@ -60,6 +61,7 @@ elif extractor_name == 'browserninja2':
             PlatformExtractor()
         ])
 else:
+    features = [ 'emd', 'ssim', 'mse' ] # 'psnr'
     extractor = BrowserNinjaCompositeExtractor(class_attr,
         extractors=[
             ComplexityExtractor(),
@@ -67,9 +69,9 @@ else:
             SizeViewportExtractor(),
             VisibilityExtractor(),
             PositionViewportExtractor(),
-            FontFamilyExtractor(),
             RelativePositionExtractor(),
-            PlatformExtractor()
+            PlatformExtractor(),
+            FontFamilyExtractor()
         ])
 
 classifier = None
@@ -192,63 +194,17 @@ groupcv = None
 groupcv = GroupKFoldCV(GroupShuffleSplit(n_splits=10, random_state=42), 'URL', cross_val_score_using_sampling)
 
 preprocessor = Preprocessor()
+rfecv = RFECV(tree.DecisionTreeClassifier(), cv=3)
 selectkbest = SelectKBest(f_classif, k=k)
 selector = FeatureSelection(selectkbest, k=k)
 approach = '%s-%s-%s-k%s' % (extractor_name, classifier_name, class_attr, str(k))
 
 print('running --- %s...' % (approach))
-if extractor_name == 'all':
-    features = [
-        #'URL', 'id', 'tagName',
-        #'childsNumber', 'textLength',
-        #'basePlatform', 'targetPlatform', 'baseBrowser', 'targetBrowser',
-        #'baseDPI', 'targetDPI',
-        #'baseScreenshot', 'targetScreenshot',
-        #'baseX', 'targetX', 'baseY', 'targetY',
-        #'baseHeight', 'targetHeight', 'baseWidth', 'targetWidth',
-        #'baseParentX', 'targetParentX', 'baseParentY', 'targetParentY',
-        #'imageDiff', 'chiSquared',
-        #'baseDeviceWidth', 'targetDeviceWidth', 'baseViewportWidth', 'targetViewportWidth',
-        #'xpath', 'baseXpath', 'targetXpath',
-        #'phash',
-        #'basePreviousSiblingLeft', 'targetPreviousSiblingLeft',
-        #'basePreviousSiblingTop', 'targetPreviousSiblingTop',
-        #'baseNextSiblingLeft', 'targetNextSiblingLeft',
-        #'baseNextSiblingTop', 'targetNextSiblingTop',
-        #'baseTextNodes', 'targetTextNodes',
-        #'baseFontFamily', 'targetFontFamily',
-        #'base_bin1', 'base_bin2', 'base_bin3', 'base_bin4', 'base_bin5',
-        #'base_bin6', 'base_bin7', 'base_bin8', 'base_bin9', 'base_bin10',
-        #'target_bin1', 'target_bin2', 'target_bin3', 'target_bin4', 'target_bin5',
-        #'target_bin6', 'target_bin7', 'target_bin8', 'target_bin9', 'target_bin10',
-        'diff_bin01', 'diff_bin02', 'diff_bin03', 'diff_bin04', 'diff_bin05',
-        'diff_bin11', 'diff_bin12', 'diff_bin13', 'diff_bin14', 'diff_bin15',
-        'diff_bin21', 'diff_bin22', 'diff_bin23', 'diff_bin24', 'diff_bin25',
-        'diff_bin31', 'diff_bin32', 'diff_bin33', 'diff_bin34', 'diff_bin35',
-        'diff_bin41', 'diff_bin42', 'diff_bin43', 'diff_bin44', 'diff_bin45'
-    ]
-    print('Runnin with everything...')
-    pipeline = Pipeline([
-        ArffLoader(),
-        #XBIExtractor(features, class_attr),
-        BrowserbiteExtractor(class_attr),
-        CrossCheckExtractor(class_attr),
-        BrowserNinjaCompositeExtractor(class_attr,
-            extractors=[
-                ComplexityExtractor(),
-                ImageComparisonExtractor(),
-                SizeViewportExtractor(),
-                VisibilityExtractor(),
-                PositionViewportExtractor(),
-                RelativePositionExtractor()
-                #PlatformExtractor(),
-                #FontFamilyExtractor()
-            ]),
-        preprocessor, selector, classifier, groupcv])
-else:
-    pipeline = Pipeline([
-        ArffLoader(), extractor, preprocessor, selector, classifier, groupcv])
-result = pipeline.execute(open('data/07042020/07042020-dataset.binary.hist.arff').read())
+pipeline = Pipeline([
+    ArffLoader(), XBIExtractor(features, class_attr),
+    extractor, preprocessor, selector, classifier, groupcv
+])
+result = pipeline.execute(open('data/07042020/07042020-dataset.binary.hist.img.arff').read())
 print('Model: ' + str(result['model']))
 print('Features: ' + str(result['features']))
 print('K: ' + str(k))
@@ -282,6 +238,10 @@ try:
         last = i
 except:
     print('did not run SelectKBest...')
+
+print(' --- Features RFECV with %d features --- ' % (rfecv.n_features_))
+for i in range(len(result['features'])):
+    print('%s -> %d' % (result['features'][i], rfecv.ranking_[i]))
 
 #if k == 3 and (classifier_name == 'dt' or classifier_name == 'randomforest'):
 #    result['model'].fit(result['X'], result['y'])
