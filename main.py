@@ -50,6 +50,7 @@ elif extractor_name == 'browserninja1':
             PositionViewportExtractor(),
         ])
 elif extractor_name == 'browserninja2':
+    features = [ 'emd', 'ssim', 'mse' ] # 'psnr'
     extractor = BrowserNinjaCompositeExtractor(class_attr,
         extractors=[
             ComplexityExtractor(),
@@ -194,7 +195,7 @@ groupcv = None
 groupcv = GroupKFoldCV(GroupShuffleSplit(n_splits=10, random_state=42), 'URL', cross_val_score_using_sampling)
 
 preprocessor = Preprocessor()
-rfecv = RFECV(tree.DecisionTreeClassifier(), cv=3)
+#rfecv = RFECV(tree.DecisionTreeClassifier(), cv=3)
 selectkbest = SelectKBest(f_classif, k=k)
 selector = FeatureSelection(selectkbest, k=k)
 approach = '%s-%s-%s-k%s' % (extractor_name, classifier_name, class_attr, str(k))
@@ -239,9 +240,9 @@ try:
 except:
     print('did not run SelectKBest...')
 
-print(' --- Features RFECV with %d features --- ' % (rfecv.n_features_))
-for i in range(len(result['features'])):
-    print('%s -> %d' % (result['features'][i], rfecv.ranking_[i]))
+#print(' --- Features RFECV with %d features --- ' % (rfecv.n_features_))
+#for i in range(len(result['features'])):
+#    print('%s -> %d' % (result['features'][i], rfecv.ranking_[i]))
 
 #if k == 3 and (classifier_name == 'dt' or classifier_name == 'randomforest'):
 #    result['model'].fit(result['X'], result['y'])
