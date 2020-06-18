@@ -76,6 +76,7 @@ else:
         ])
 
 classifier = None
+selection_classifier = None
 if classifier_name == 'randomforest':
     max_features = ['auto']
     if extractor_name != 'crosscheck':
@@ -95,20 +96,22 @@ if classifier_name == 'randomforest':
             'class_weight': [None, 'balanced']
         }, cv=GroupShuffleSplit(n_splits=3, random_state=42)),
         ensemble.RandomForestClassifier(random_state=42), 'URL')
+    selection_classifier = ensemble.RandomForestClassifier()
 elif classifier_name == 'svm':
-    classifier = ClassifierTunning(GridSearchCV(svm.SVC(), {
-    #classifier = ClassifierTunning(GridSearchCV(svm.LinearSVC(), {
-            'kernel': ['linear', 'rbf', 'poly', 'sigmoid'],
-            'degree': [1, 2, 3],
-            'coef0': [0, 10, 100],
-            #'dual': [False],
+    #classifier = ClassifierTunning(GridSearchCV(svm.SVC(), {
+    classifier = ClassifierTunning(GridSearchCV(svm.LinearSVC(), {
+            #'kernel': ['linear', 'rbf', 'poly', 'sigmoid'],
+            #'degree': [1, 2, 3],
+            #'coef0': [0, 10, 100],
+            'dual': [False],
             'C': [1, 10, 100],
             'tol': [0.001, 0.1, 1],
             'class_weight': ['balanced', None],
             'max_iter': [5000]
         }, cv=GroupShuffleSplit(n_splits=3, random_state=42)),
-        svm.SVC(random_state=42, probability=True), 'URL')
-        #svm.LinearSVC(random_state=42), 'URL')
+        #svm.SVC(random_state=42, probability=True), 'URL')
+        svm.LinearSVC(random_state=42), 'URL')
+    selection_classifier = svm.LinearSVC(dual=False, max_iter=5000)
 elif classifier_name == 'dt':
     max_features = ['auto']
     if extractor_name != 'crosscheck':
@@ -127,6 +130,7 @@ elif classifier_name == 'dt':
             'min_samples_leaf': [1, 5, 10]
         }, cv=GroupShuffleSplit(n_splits=3, random_state=42)),
         tree.DecisionTreeClassifier(random_state=42), 'URL')
+    selection_classifier = tree.DecisionTreeClassifier()
 else:
     classifier = ClassifierTunning(GridSearchCV(MLPClassifier(), {
             'hidden_layer_sizes': [5, 10, 30],
@@ -139,6 +143,7 @@ else:
             'random_state': [42]
         }, cv=GroupShuffleSplit(n_splits=3, random_state=42)),
         MLPClassifier(random_state=42), 'URL')
+    selection_classifier = MLPClassifier()
 
 sampler = TomekLinks()
 
@@ -163,7 +168,13 @@ def cross_val_score_using_sampling(model, X, y, cv, groups, scoring):
         recall.append(metrics.recall_score(y_test, y_pred))
         roc.append(metrics.roc_auc_score(y_test, y_pred))
 
-        y_pred = model.predict_proba(X_train)
+        try:
+            y_pred = model.predict_proba(X_train)
+        except:
+            model = CalibratedClassifierCV(model)
+            model.fit(X_samp, y_samp)
+            y_pred = model.predict_proba(X_train)
+
         probability = y_pred[:,1]
 
         best_roc.append(metrics.roc_auc_score(y_train, probability))
@@ -195,9 +206,10 @@ groupcv = None
 groupcv = GroupKFoldCV(GroupShuffleSplit(n_splits=10, random_state=42), 'URL', cross_val_score_using_sampling)
 
 preprocessor = Preprocessor()
-#rfecv = RFECV(tree.DecisionTreeClassifier(), cv=3)
-selectkbest = SelectKBest(f_classif, k=k)
-selector = FeatureSelection(selectkbest, k=k)
+rfecv = RFECV(selection_classifier, cv=3, min_features_to_select=k)
+#selectkbest = SelectKBest(f_classif, k=k)
+#selector = FeatureSelection(selectkbest, k=k)
+selector = FeatureSelection(rfecv, k=k)
 approach = '%s-%s-%s-k%s' % (extractor_name, classifier_name, class_attr, str(k))
 
 print('running --- %s...' % (approach))
@@ -240,9 +252,12 @@ try:
 except:
     print('did not run SelectKBest...')
 
-#print(' --- Features RFECV with %d features --- ' % (rfecv.n_features_))
-#for i in range(len(result['features'])):
-#    print('%s -> %d' % (result['features'][i], rfecv.ranking_[i]))
+try:
+    print(' --- Features RFECV with %d features --- ' % (rfecv.n_features_))
+    for i in range(len(result['features'])):
+        print('%s -> %d' % (result['features'][i], rfecv.ranking_[i]))
+except:
+    print('did not run RFECV...')
 
 #if k == 3 and (classifier_name == 'dt' or classifier_name == 'randomforest'):
 #    result['model'].fit(result['X'], result['y'])
