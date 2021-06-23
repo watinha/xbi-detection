@@ -196,8 +196,8 @@ class BrowserNinjaExtractorTest(TestCase):
         arff_data['data'] = np.array(arff_data['data'])
         result = self.extractor.execute(arff_data)
         self.assertEqual(2, len(result['y']))
-        self.assertEqual('0', result['y'][0])
-        self.assertEqual('1', result['y'][1])
+        self.assertEqual(0, result['y'][0])
+        self.assertEqual(1, result['y'][1])
 
     def test_execute_extracts_image_comparison_features_if_X_is_not_empty(self):
         arff_data = arff.load(self.generate_arff("""13,17,1,2,3,4,5,6,7,8,100,0.12,360,414,0.3,0

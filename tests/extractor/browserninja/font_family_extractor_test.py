@@ -29,7 +29,7 @@ class FontFamilyExtractorTest(TestCase):
         arff = self.generate_arff("""1,2,3,Arial,Arial,1
 4,5,6,Arial,Arial,1""")
         X = np.array([[1, 2, 3], [4, 5, 6]])
-        y = np.array(['1', '1'])
+        y = np.array([1, 1])
         features = ['abobrinha', 'pepino', 'mamao']
         arguments = {
                 'X': X, 'y': y, 'features': features,
