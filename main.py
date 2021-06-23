@@ -100,19 +100,19 @@ if classifier_name == 'randomforest':
     selection_classifier = tree.DecisionTreeClassifier()
     #selection_classifier = ensemble.RandomForestClassifier()
 elif classifier_name == 'svm':
-    classifier = ClassifierTunning(GridSearchCV(svm.SVC(), {
-    #classifier = ClassifierTunning(GridSearchCV(svm.LinearSVC(), {
-            'kernel': ['linear', 'rbf', 'poly', 'sigmoid'],
-            'degree': [1, 2, 3],
-            'coef0': [0, 10, 100],
-            #'dual': [False],
+    #classifier = ClassifierTunning(GridSearchCV(svm.SVC(), {
+    classifier = ClassifierTunning(GridSearchCV(svm.LinearSVC(), {
+            #'kernel': ['linear', 'rbf', 'poly', 'sigmoid'],
+            #'degree': [1, 2, 3],
+            #'coef0': [0, 10, 100],
+            'dual': [False],
             'C': [1, 10, 100],
             'tol': [0.001, 0.1, 1],
             'class_weight': ['balanced', None],
             'max_iter': [5000]
         }, cv=GroupShuffleSplit(n_splits=3, random_state=42)),
-        svm.SVC(random_state=42, probability=True), 'URL')
-        #svm.LinearSVC(random_state=42), 'URL')
+        #svm.SVC(random_state=42, probability=True), 'URL')
+        svm.LinearSVC(random_state=42), 'URL')
     selection_classifier = svm.LinearSVC(dual=False, max_iter=5000)
 elif classifier_name == 'dt':
     max_features = ['auto']
@@ -241,7 +241,7 @@ pipeline = Pipeline([
     extractor, preprocessor, classifier, groupcv
     #extractor, preprocessor, selector, classifier, groupcv # not using feature selection
 ])
-result = pipeline.execute(open('data/07042020/07042020-dataset.binary.hist.img.arff').read())
+result = pipeline.execute(open('data/07042020/07042020-dataset.binary.ncc.hist.img.arff').read())
 print('Model: ' + str(result['model']))
 print('Features: ' + str(result['features']))
 print('K: ' + str(k))
