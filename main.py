@@ -51,7 +51,7 @@ elif extractor_name == 'browserninja1':
             PositionViewportExtractor(),
         ])
 elif extractor_name == 'browserninja2':
-    features = [ 'emd', 'ssim', 'mse' ] # 'psnr'
+    features = [ 'emd', 'ssim', 'mse', 'ncc' ] # 'psnr'
     extractor = BrowserNinjaCompositeExtractor(class_attr,
         extractors=[
             ComplexityExtractor(),
@@ -63,7 +63,7 @@ elif extractor_name == 'browserninja2':
             PlatformExtractor()
         ])
 else:
-    features = [ 'emd', 'ssim', 'mse' ] # 'psnr'
+    features = [ 'emd', 'ssim', 'mse', 'ncc' ] # 'psnr'
     extractor = BrowserNinjaCompositeExtractor(class_attr,
         extractors=[
             ComplexityExtractor(),
