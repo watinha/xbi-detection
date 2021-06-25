@@ -8,7 +8,7 @@ from sklearn import tree, svm, ensemble
 from sklearn import metrics
 from sklearn.calibration import CalibratedClassifierCV
 from sklearn.neural_network import MLPClassifier
-from sklearn.feature_selection import SelectKBest, chi2, f_classif
+from sklearn.feature_selection import SelectKBest, f_classif
 from sklearn.model_selection import GridSearchCV,GroupKFold,GroupShuffleSplit,cross_validate
 from sklearn.pipeline import Pipeline as Pipe
 from functools import reduce
@@ -78,60 +78,64 @@ else:
         ])
 
 classifier = None
-max_features = ['auto']
-if extractor_name != 'crosscheck':
-    if (k >= 10):
-        max_features = max_features + [10]
-    if (k >= 5):
-        max_features = max_features + [5]
-    if (k >= 3):
-        max_features = max_features + [3]
+max_features = []
+if extractor_name == 'browserninja2':
+    max_features = [5, 10, 15]
+
 if classifier_name == 'randomforest':
-    classifier = ClassifierTunning(GridSearchCV(ensemble.RandomForestClassifier(), {
-            'n_estimators': [5, 10, 15],
-            'criterion': ["gini", "entropy"],
-            'max_depth': [5, 10, None], #'max_depth': [5, 10, 30, 50, None],
-            'min_samples_split': [3, 10, 30], #'min_samples_split': [2, 3, 10, 30],
-            'min_samples_leaf': [1, 5, 10],
-            'max_features': max_features,
-            'class_weight': [None, 'balanced']
+    model = Pipe([('selector', SelectKBest(f_classif)), ('classifier', ensemble.RandomForestClassifier())])
+    classifier = ClassifierTunning(GridSearchCV(model, {
+            'selector__k': max_features + ['all'],
+            'classifier__n_estimators': [5, 10, 15],
+            'classifier__criterion': ["gini", "entropy"],
+            'classifier__max_depth': [5, 10, None], #'max_depth': [5, 10, 30, 50, None],
+            'classifier__min_samples_split': [3, 10, 30], #'min_samples_split': [2, 3, 10, 30],
+            'classifier__min_samples_leaf': [1, 5, 10],
+            #'classifier__max_features': max_features + ['auto'],
+            'classifier__class_weight': [None, 'balanced']
         }, cv=GroupShuffleSplit(n_splits=3, random_state=42)),
         ensemble.RandomForestClassifier(random_state=42), 'URL')
 elif classifier_name == 'dt':
-    classifier = ClassifierTunning(GridSearchCV(tree.DecisionTreeClassifier(), {
-            'criterion': ["gini", "entropy"],
-            'max_depth': [5, 10, None],
-            'min_samples_split': [10, 30, 50],
-            'class_weight': [None, 'balanced'],
-            'max_features': max_features,
-            'min_samples_leaf': [1, 5, 10]
+    model = Pipe([('selector', SelectKBest(f_classif)), ('classifier', tree.DecisionTreeClassifier())])
+    classifier = ClassifierTunning(GridSearchCV(model, {
+            'selector__k': max_features + ['all'],
+            'classifier__criterion': ["gini", "entropy"],
+            'classifier__max_depth': [5, 10, None],
+            'classifier__min_samples_split': [10, 30, 50],
+            'classifier__class_weight': [None, 'balanced'],
+            #'classifier__max_features': max_features + ['auto'],
+            'classifier__min_samples_leaf': [1, 5, 10]
         }, cv=GroupShuffleSplit(n_splits=3, random_state=42)),
         tree.DecisionTreeClassifier(random_state=42), 'URL')
 elif classifier_name == 'svm':
-        #classifier = ClassifierTunning(GridSearchCV(svm.SVC(), {
-        classifier = ClassifierTunning(GridSearchCV(svm.LinearSVC(), {
-                #'kernel': ['linear', 'rbf', 'poly', 'sigmoid'],
-                #'degree': [1, 2, 3],
-                #'coef0': [0, 10, 100],
-                'dual': [False],
-                'C': [1, 10, 100],
-                'tol': [0.001, 0.1, 1],
-                'class_weight': ['balanced', None],
-                'max_iter': [5000]
-            }, cv=GroupShuffleSplit(n_splits=3, random_state=42)),
-            #svm.SVC(random_state=42, probability=True), 'URL')
-            svm.LinearSVC(random_state=42), 'URL')
+    model = Pipe([('selector', SelectKBest(f_classif)), ('classifier', svm.LinearSVC())])
+    #classifier = ClassifierTunning(GridSearchCV(svm.SVC(), {
+    classifier = ClassifierTunning(GridSearchCV(svm.LinearSVC(), {
+            'selector__k': max_features + ['all'],
+            #'classifier__kernel': ['linear', 'rbf', 'poly', 'sigmoid'],
+            #'classifier__degree': [1, 2, 3],
+            #'classifier__coef0': [0, 10, 100],
+            #'classifier__dual': [False],
+            'classifier__C': [1, 10, 100],
+            'classifier__tol': [0.001, 0.1, 1],
+            'classifier__class_weight': ['balanced', None],
+            'classifier__max_iter': [10000]
+        }, cv=GroupShuffleSplit(n_splits=3, random_state=42)),
+        #svm.SVC(random_state=42, probability=True), 'URL')
+        svm.LinearSVC(random_state=42), 'URL')
 else:
+    model = Pipe([('selector', SelectKBest(f_classif)), ('classifier', MLPClassifier())])
     classifier = ClassifierTunning(GridSearchCV(MLPClassifier(), {
-            'hidden_layer_sizes': [10, 20, 30],
-            'activation': ['identity', 'logistic', 'tanh', 'relu'],
-            #'activation': ['relu'],
-#            'solver': ['lbfgs', 'sgd', 'adam'],
-            'solver': ['adam'],
-            'alpha': [0.0001, 0.01, 0.1],
-            'max_iter': [5000],
-            'learning_rate': ['constant', 'invscaling', 'adaptive'],
-            'random_state': [42]
+            'selector__k': max_features + ['all'],
+            'classifier__hidden_layer_sizes': [10, 20, 30],
+            'classifier__activation': ['identity', 'logistic', 'tanh', 'relu'],
+            #'classifier__activation': ['relu'],
+#            'classifier__solver': ['lbfgs', 'sgd', 'adam'],
+            'classifier__solver': ['adam'],
+            'classifier__alpha': [0.0001, 0.01, 0.1],
+            'classifier__max_iter': [10000],
+            'classifier__learning_rate': ['constant', 'invscaling', 'adaptive'],
+            'classifier__random_state': [42]
         }, cv=GroupShuffleSplit(n_splits=3, random_state=42)),
         MLPClassifier(random_state=42), 'URL')
 
@@ -153,20 +157,19 @@ def cross_val_score_using_sampling(model, X, y, cv, groups, scoring):
     best_precision = []
     best_recall = []
     best_roc = []
-    initial_model = model
     for train_index, test_index in cv.split(X, y, groups):
         X_train, X_test = X[train_index], X[test_index]
         y_train, y_test = y[train_index], y[test_index]
         groups_train = [i for i in groups if groups.index(i) in train_index]
 
-        classifier._grid.fit(X_train, y_train, groups=groups_train)
-        model = initial_model
-        model.set_params(**classifier._grid.best_params_)
-
         X_samp, y_samp = sampler.fit_sample(X_train, y_train)
 
-        model.fit(X_samp, y_samp)
         print('Model trainning with: X (%s)' % (str(X_samp.shape)))
+        model.fit(X_samp, y_samp, groups=groups_train)
+
+        selector = model.best_estimator_.named_steps['selector']
+        rankings.append(selector.get_support(indices=False))
+
         y_pred = model.predict(X_test)
 
         fscore.append(metrics.f1_score(y_test, y_pred))
@@ -235,25 +238,6 @@ print('Best      Recall: ' + str(result['score']['best_recall']))
 print('Best     ROC: ' + str(result['score']['best_roc']))
 print('Best     ROC: %f' % (reduce(lambda x, y: x+y, result['score']['best_roc']) / 10))
 
-#try:
-#    sorted_scores = selectkbest.scores_.tolist().copy()
-#    sorted_scores.sort()
-#    last = None
-#    for i in sorted_scores:
-#        if (i == last):
-#            last = None
-#            continue
-#        for j in range(len(selectkbest.scores_)):
-#            if selectkbest.scores_[j] == i:
-#                if len(result['features']) <= j:
-#                    print('Feature %d FONT: %f' % (j, i))
-#                else:
-#                    print('Feature %d %s: %f' % (j, result['features'][j], i))
-#        last = i
-#except:
-#    print('did not run SelectKBest...')
-
-
 fscore = result['score']['best_f1']
 precision = result['score']['best_precision']
 recall = result['score']['best_recall']
@@ -271,13 +255,11 @@ roc_csv[approach] = roc
 try:
     features_csv = pd.read_csv('results/features-%s.csv' % (class_attr), index_col=0)
 except:
-    features_csv = pd.DataFrame()
-    features_csv[0] = result['features']
+    features_csv = pd.DataFrame(columns=result['features'])
 
 features_len = features_csv.shape[1]
 for i in range(len(rankings)):
-    features_csv['%s-k%d-%d' % (classifier_name, k, (i + features_len))] = rankings[i]
-
+    features_csv.loc['%s-k%d-%d' % (classifier_name, k, (i + features_len)), :] = rankings[i]
 
 fscore_csv.to_csv('results/fscore-%s.csv' % (class_attr))
 precision_csv.to_csv('results/precision-%s.csv' % (class_attr))
