@@ -8,8 +8,9 @@ from sklearn import tree, svm, ensemble
 from sklearn import metrics
 from sklearn.calibration import CalibratedClassifierCV
 from sklearn.neural_network import MLPClassifier
-from sklearn.feature_selection import SelectKBest, chi2, f_classif, RFE
+from sklearn.feature_selection import SelectKBest, chi2, f_classif
 from sklearn.model_selection import GridSearchCV,GroupKFold,GroupShuffleSplit,cross_validate
+from sklearn.pipeline import Pipeline as Pipe
 from functools import reduce
 
 from pipeline import Pipeline
@@ -77,16 +78,15 @@ else:
         ])
 
 classifier = None
-selection_classifier = None
+max_features = ['auto']
+if extractor_name != 'crosscheck':
+    if (k >= 10):
+        max_features = max_features + [10]
+    if (k >= 5):
+        max_features = max_features + [5]
+    if (k >= 3):
+        max_features = max_features + [3]
 if classifier_name == 'randomforest':
-    max_features = ['auto']
-    if extractor_name != 'crosscheck':
-        if (k >= 10):
-            max_features = max_features + [10]
-        if (k >= 5):
-            max_features = max_features + [5]
-        if (k >= 3):
-            max_features = max_features + [3]
     classifier = ClassifierTunning(GridSearchCV(ensemble.RandomForestClassifier(), {
             'n_estimators': [5, 10, 15],
             'criterion': ["gini", "entropy"],
@@ -97,32 +97,7 @@ if classifier_name == 'randomforest':
             'class_weight': [None, 'balanced']
         }, cv=GroupShuffleSplit(n_splits=3, random_state=42)),
         ensemble.RandomForestClassifier(random_state=42), 'URL')
-    selection_classifier = tree.DecisionTreeClassifier()
-    #selection_classifier = ensemble.RandomForestClassifier()
-elif classifier_name == 'svm':
-    #classifier = ClassifierTunning(GridSearchCV(svm.SVC(), {
-    classifier = ClassifierTunning(GridSearchCV(svm.LinearSVC(), {
-            #'kernel': ['linear', 'rbf', 'poly', 'sigmoid'],
-            #'degree': [1, 2, 3],
-            #'coef0': [0, 10, 100],
-            'dual': [False],
-            'C': [1, 10, 100],
-            'tol': [0.001, 0.1, 1],
-            'class_weight': ['balanced', None],
-            'max_iter': [5000]
-        }, cv=GroupShuffleSplit(n_splits=3, random_state=42)),
-        #svm.SVC(random_state=42, probability=True), 'URL')
-        svm.LinearSVC(random_state=42), 'URL')
-    selection_classifier = svm.LinearSVC(dual=False, max_iter=5000)
 elif classifier_name == 'dt':
-    max_features = ['auto']
-    if extractor_name != 'crosscheck':
-        if (k >= 10):
-            max_features = max_features + [10]
-        if (k >= 5):
-            max_features = max_features + [5]
-        if (k >= 3):
-            max_features = max_features + [3]
     classifier = ClassifierTunning(GridSearchCV(tree.DecisionTreeClassifier(), {
             'criterion': ["gini", "entropy"],
             'max_depth': [5, 10, None],
@@ -132,7 +107,20 @@ elif classifier_name == 'dt':
             'min_samples_leaf': [1, 5, 10]
         }, cv=GroupShuffleSplit(n_splits=3, random_state=42)),
         tree.DecisionTreeClassifier(random_state=42), 'URL')
-    selection_classifier = tree.DecisionTreeClassifier()
+elif classifier_name == 'svm':
+        #classifier = ClassifierTunning(GridSearchCV(svm.SVC(), {
+        classifier = ClassifierTunning(GridSearchCV(svm.LinearSVC(), {
+                #'kernel': ['linear', 'rbf', 'poly', 'sigmoid'],
+                #'degree': [1, 2, 3],
+                #'coef0': [0, 10, 100],
+                'dual': [False],
+                'C': [1, 10, 100],
+                'tol': [0.001, 0.1, 1],
+                'class_weight': ['balanced', None],
+                'max_iter': [5000]
+            }, cv=GroupShuffleSplit(n_splits=3, random_state=42)),
+            #svm.SVC(random_state=42, probability=True), 'URL')
+            svm.LinearSVC(random_state=42), 'URL')
 else:
     classifier = ClassifierTunning(GridSearchCV(MLPClassifier(), {
             'hidden_layer_sizes': [10, 20, 30],
@@ -146,7 +134,6 @@ else:
             'random_state': [42]
         }, cv=GroupShuffleSplit(n_splits=3, random_state=42)),
         MLPClassifier(random_state=42), 'URL')
-    selection_classifier = svm.LinearSVC(dual=False, max_iter=5000)
 
 class NoneSampler:
     def fit_sample(self, X, y):
@@ -177,10 +164,6 @@ def cross_val_score_using_sampling(model, X, y, cv, groups, scoring):
         model.set_params(**classifier._grid.best_params_)
 
         X_samp, y_samp = sampler.fit_sample(X_train, y_train)
-        if k < X.shape[1]:
-            X_samp = rfecv.fit_transform(X_samp, y_samp)
-            X_test = rfecv.transform(X_test)
-            rankings.append(rfecv.ranking_)
 
         model.fit(X_samp, y_samp)
         print('Model trainning with: X (%s)' % (str(X_samp.shape)))
@@ -229,17 +212,11 @@ groupcv = None
 groupcv = GroupKFoldCV(GroupShuffleSplit(n_splits=10, random_state=42), 'URL', cross_val_score_using_sampling)
 
 preprocessor = Preprocessor()
-rfecv = RFE(selection_classifier, n_features_to_select=k)
-#selectkbest = SelectKBest(f_classif, k=k)
-#selector = FeatureSelection(selectkbest, k=k)
-selector = FeatureSelection(rfecv, k=k)
 approach = '%s-%s-%s-k%s' % (extractor_name, classifier_name, class_attr, str(k))
-
 print('running --- %s...' % (approach))
 pipeline = Pipeline([
     ArffLoader(), XBIExtractor(features, class_attr),
     extractor, preprocessor, classifier, groupcv
-    #extractor, preprocessor, selector, classifier, groupcv # not using feature selection
 ])
 result = pipeline.execute(open('data/07042020/07042020-dataset.binary.ncc.hist.img.arff').read())
 print('Model: ' + str(result['model']))
@@ -276,20 +253,6 @@ print('Best     ROC: %f' % (reduce(lambda x, y: x+y, result['score']['best_roc']
 #except:
 #    print('did not run SelectKBest...')
 
-#if k == 3 and (classifier_name == 'dt' or classifier_name == 'randomforest'):
-#    result['model'].fit(result['X'], result['y'])
-#    for i in range(len(result['features'])):
-#        print('%s: %f' % (result['features'][i], result['model'].feature_importances_[i]))
-
-#try:
-#    print(result['features'])
-#    print(' --- Features RFECV with %d features --- ' % (rfecv.n_features_))
-#    for ranking in rankings:
-#        print('--- ranking ---')
-#        for i in range(len(result['features'])):
-#            print('%s -> %d' % (result['features'][i], ranking[i]))
-#except:
-#    print('Did not run RFECV...')
 
 fscore = result['score']['best_f1']
 precision = result['score']['best_precision']
