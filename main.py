@@ -110,7 +110,7 @@ elif classifier_name == 'dt':
 elif classifier_name == 'svm':
     model = Pipe([('selector', SelectKBest(f_classif)), ('classifier', svm.LinearSVC())])
     #classifier = ClassifierTunning(GridSearchCV(svm.SVC(), {
-    classifier = ClassifierTunning(GridSearchCV(svm.LinearSVC(), {
+    classifier = ClassifierTunning(GridSearchCV(model, {
             'selector__k': max_features + ['all'],
             #'classifier__kernel': ['linear', 'rbf', 'poly', 'sigmoid'],
             #'classifier__degree': [1, 2, 3],
@@ -125,7 +125,7 @@ elif classifier_name == 'svm':
         svm.LinearSVC(random_state=42), 'URL')
 else:
     model = Pipe([('selector', SelectKBest(f_classif)), ('classifier', MLPClassifier())])
-    classifier = ClassifierTunning(GridSearchCV(MLPClassifier(), {
+    classifier = ClassifierTunning(GridSearchCV(model, {
             'selector__k': max_features + ['all'],
             'classifier__hidden_layer_sizes': [10, 20, 30],
             'classifier__activation': ['identity', 'logistic', 'tanh', 'relu'],
@@ -258,11 +258,12 @@ except:
     features_csv = pd.DataFrame(columns=result['features'])
 
 features_len = features_csv.shape[1]
-for i in range(len(rankings)):
-    features_csv.loc['%s-k%d-%d' % (classifier_name, k, (i + features_len)), :] = rankings[i]
+if extractor_name == 'browserninja2':
+    for i in range(len(rankings)):
+        features_csv.loc['%s-k%d-%d' % (classifier_name, k, (i + features_len)), :] = rankings[i]
+    features_csv.to_csv('results/features-%s.csv' % (class_attr))
 
 fscore_csv.to_csv('results/fscore-%s.csv' % (class_attr))
 precision_csv.to_csv('results/precision-%s.csv' % (class_attr))
 recall_csv.to_csv('results/recall-%s.csv' % (class_attr))
 roc_csv.to_csv('results/roc-%s.csv' % (class_attr))
-features_csv.to_csv('results/features-%s.csv' % (class_attr))
