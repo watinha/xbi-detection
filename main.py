@@ -108,21 +108,18 @@ elif classifier_name == 'dt':
         }, cv=GroupShuffleSplit(n_splits=3, random_state=42)),
         tree.DecisionTreeClassifier(random_state=42), 'URL')
 elif classifier_name == 'svm':
-    model = Pipe([('selector', SelectKBest(f_classif)), ('classifier', svm.LinearSVC())])
-    #classifier = ClassifierTunning(GridSearchCV(svm.SVC(), {
+    model = Pipe([('selector', SelectKBest(f_classif)), ('classifier', svm.SVC())])
     classifier = ClassifierTunning(GridSearchCV(model, {
             'selector__k': max_features + ['all'],
-            #'classifier__kernel': ['linear', 'rbf', 'poly', 'sigmoid'],
-            #'classifier__degree': [1, 2, 3],
-            #'classifier__coef0': [0, 10, 100],
-            #'classifier__dual': [False],
+            'classifier__kernel': ['linear', 'rbf', 'poly', 'sigmoid'],
+            'classifier__degree': [2, 3],
+            'classifier__coef0': [0, 10, 100],
             'classifier__C': [1, 10, 100],
             'classifier__tol': [0.001, 0.1, 1],
             'classifier__class_weight': ['balanced', None],
-            'classifier__max_iter': [10000]
+            'classifier__max_iter': [20000]
         }, cv=GroupShuffleSplit(n_splits=3, random_state=42)),
-        #svm.SVC(random_state=42, probability=True), 'URL')
-        svm.LinearSVC(random_state=42), 'URL')
+        svm.SVC(random_state=42, probability=True), 'URL')
 else:
     model = Pipe([('selector', SelectKBest(f_classif)), ('classifier', MLPClassifier())])
     classifier = ClassifierTunning(GridSearchCV(model, {
@@ -177,13 +174,7 @@ def cross_val_score_using_sampling(model, X, y, cv, groups, scoring):
         recall.append(metrics.recall_score(y_test, y_pred))
         roc.append(metrics.roc_auc_score(y_test, y_pred))
 
-        try:
-            y_pred = model.predict_proba(X_test)
-        except:
-            model = CalibratedClassifierCV(model)
-            model.fit(X_samp, y_samp)
-            y_pred = model.predict_proba(X_test)
-
+        y_pred = model.predict_proba(X_test)
         probability = y_pred[:,1]
 
         best_roc.append(metrics.roc_auc_score(y_test, probability))
