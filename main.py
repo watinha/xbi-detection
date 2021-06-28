@@ -78,62 +78,65 @@ else:
         ])
 
 classifier = None
+nfeatures = []
 max_features = []
 if extractor_name == 'browserninja2':
     max_features = [5, 10, 15]
+    nfeatures = [5, 10, 15]
+if extractor_name == 'browserninja1':
+    max_features = [5, 10]
+    nfeatures = []
 
 if classifier_name == 'randomforest':
     model = Pipe([('selector', SelectKBest(f_classif)), ('classifier', ensemble.RandomForestClassifier())])
     classifier = ClassifierTunning(GridSearchCV(model, {
-            'selector__k': max_features + ['all'],
+            'selector__k': nfeatures + ['all'],
             'classifier__n_estimators': [5, 10, 15],
             'classifier__criterion': ["gini", "entropy"],
             'classifier__max_depth': [5, 10, None], #'max_depth': [5, 10, 30, 50, None],
             'classifier__min_samples_split': [3, 10, 30], #'min_samples_split': [2, 3, 10, 30],
             'classifier__min_samples_leaf': [1, 5, 10],
-            #'classifier__max_features': max_features + ['auto'],
+            'classifier__max_features': max_features + ['auto'],
             'classifier__class_weight': [None, 'balanced']
-        }, cv=GroupShuffleSplit(n_splits=3, random_state=42)),
+        }, cv=GroupShuffleSplit(n_splits=3, random_state=42), scoring='f1', error_score=0, verbose=3),
         ensemble.RandomForestClassifier(random_state=42), 'URL')
 elif classifier_name == 'dt':
     model = Pipe([('selector', SelectKBest(f_classif)), ('classifier', tree.DecisionTreeClassifier())])
     classifier = ClassifierTunning(GridSearchCV(model, {
-            'selector__k': max_features + ['all'],
+            'selector__k': nfeatures + ['all'],
             'classifier__criterion': ["gini", "entropy"],
             'classifier__max_depth': [5, 10, None],
             'classifier__min_samples_split': [10, 30, 50],
             'classifier__class_weight': [None, 'balanced'],
-            #'classifier__max_features': max_features + ['auto'],
+            'classifier__max_features': max_features + ['auto'],
             'classifier__min_samples_leaf': [1, 5, 10]
-        }, cv=GroupShuffleSplit(n_splits=3, random_state=42)),
+        }, cv=GroupShuffleSplit(n_splits=3, random_state=42), scoring='f1', error_score=0, verbose=3),
         tree.DecisionTreeClassifier(random_state=42), 'URL')
 elif classifier_name == 'svm':
-    model = Pipe([('selector', SelectKBest(f_classif)), ('classifier', svm.SVC())])
+    model = Pipe([('selector', SelectKBest(f_classif)), ('classifier', svm.SVC(probability=True))])
     classifier = ClassifierTunning(GridSearchCV(model, {
-            'selector__k': max_features + ['all'],
-            'classifier__kernel': ['linear', 'rbf', 'poly', 'sigmoid'],
-            'classifier__degree': [2, 3],
+            'selector__k': nfeatures + ['all'],
+            'classifier__kernel': ['linear', 'rbf'], #'poly', 'sigmoid'],
+            #'classifier__degree': [2, 3],
             'classifier__coef0': [0, 10, 100],
             'classifier__C': [1, 10, 100],
             'classifier__tol': [0.001, 0.1, 1],
             'classifier__class_weight': ['balanced', None],
-            'classifier__max_iter': [20000]
-        }, cv=GroupShuffleSplit(n_splits=3, random_state=42)),
+            'classifier__max_iter': [10000]
+        }, cv=GroupShuffleSplit(n_splits=3, random_state=42), scoring='f1', error_score=0, verbose=3),
         svm.SVC(random_state=42, probability=True), 'URL')
 else:
     model = Pipe([('selector', SelectKBest(f_classif)), ('classifier', MLPClassifier())])
     classifier = ClassifierTunning(GridSearchCV(model, {
-            'selector__k': max_features + ['all'],
+            'selector__k': nfeatures + ['all'],
             'classifier__hidden_layer_sizes': [10, 20, 30],
             'classifier__activation': ['identity', 'logistic', 'tanh', 'relu'],
-            #'classifier__activation': ['relu'],
-#            'classifier__solver': ['lbfgs', 'sgd', 'adam'],
-            'classifier__solver': ['adam'],
+            'classifier__solver': ['adam'], #'lbfgs', 'sgd', 'adam'],
             'classifier__alpha': [0.0001, 0.01, 0.1],
             'classifier__max_iter': [10000],
             'classifier__learning_rate': ['constant', 'invscaling', 'adaptive'],
             'classifier__random_state': [42]
-        }, cv=GroupShuffleSplit(n_splits=3, random_state=42)),
+        }, cv=GroupShuffleSplit(n_splits=3, random_state=42), scoring='f1', error_score=0, verbose=3),
         MLPClassifier(random_state=42), 'URL')
 
 class NoneSampler:
@@ -233,15 +236,27 @@ fscore = result['score']['best_f1']
 precision = result['score']['best_precision']
 recall = result['score']['best_recall']
 roc = result['score']['test_roc_auc']
-fscore_csv = pd.read_csv('results/fscore-%s.csv' % (class_attr), index_col=0)
-precision_csv = pd.read_csv('results/precision-%s.csv' % (class_attr), index_col=0)
-recall_csv = pd.read_csv('results/recall-%s.csv' % (class_attr), index_col=0)
-roc_csv = pd.read_csv('results/roc-%s.csv' % (class_attr), index_col=0)
 
-fscore_csv[approach] = fscore
-precision_csv[approach] = precision
-recall_csv[approach] = recall
-roc_csv[approach] = roc
+try:
+    fscore_csv = pd.read_csv('results/fscore-%s.csv' % (class_attr), index_col=0)
+    precision_csv = pd.read_csv('results/precision-%s.csv' % (class_attr), index_col=0)
+    recall_csv = pd.read_csv('results/recall-%s.csv' % (class_attr), index_col=0)
+    roc_csv = pd.read_csv('results/roc-%s.csv' % (class_attr), index_col=0)
+except:
+    fscore_csv = pd.DataFrame()
+    precision_csv = pd.DataFrame()
+    recall_csv = pd.DataFrame()
+    roc_csv = pd.DataFrame()
+
+fscore_csv.loc[:, approach] = fscore
+precision_csv.loc[:, approach] = precision
+recall_csv.loc[:, approach] = recall
+roc_csv.loc[:, approach] = roc
+
+fscore_csv.to_csv('results/fscore-%s.csv' % (class_attr))
+precision_csv.to_csv('results/precision-%s.csv' % (class_attr))
+recall_csv.to_csv('results/recall-%s.csv' % (class_attr))
+roc_csv.to_csv('results/roc-%s.csv' % (class_attr))
 
 try:
     features_csv = pd.read_csv('results/features-%s.csv' % (class_attr), index_col=0)
@@ -253,8 +268,3 @@ if extractor_name == 'browserninja2':
     for i in range(len(rankings)):
         features_csv.loc['%s-k%d-%d' % (classifier_name, k, (i + features_len)), :] = rankings[i]
     features_csv.to_csv('results/features-%s.csv' % (class_attr))
-
-fscore_csv.to_csv('results/fscore-%s.csv' % (class_attr))
-precision_csv.to_csv('results/precision-%s.csv' % (class_attr))
-recall_csv.to_csv('results/recall-%s.csv' % (class_attr))
-roc_csv.to_csv('results/roc-%s.csv' % (class_attr))
