@@ -91,6 +91,7 @@ if classifier_name == 'randomforest':
     model = Pipe([('selector', SelectKBest(f_classif)), ('classifier', ensemble.RandomForestClassifier())])
     classifier = ClassifierTunning(GridSearchCV(model, {
             'selector__k': nfeatures + ['all'],
+            'selector__score_func': [f_classif, mutual_info_classif],
             'classifier__n_estimators': [5, 10, 15],
             'classifier__criterion': ["gini", "entropy"],
             'classifier__max_depth': [5, 10, None], #'max_depth': [5, 10, 30, 50, None],
@@ -104,6 +105,7 @@ elif classifier_name == 'dt':
     model = Pipe([('selector', SelectKBest(f_classif)), ('classifier', tree.DecisionTreeClassifier())])
     classifier = ClassifierTunning(GridSearchCV(model, {
             'selector__k': nfeatures + ['all'],
+            'selector__score_func': [f_classif, mutual_info_classif],
             'classifier__criterion': ["gini", "entropy"],
             'classifier__max_depth': [5, 10, None],
             'classifier__min_samples_split': [10, 30, 50],
@@ -116,6 +118,7 @@ elif classifier_name == 'svm':
     model = Pipe([('selector', SelectKBest(f_classif)), ('classifier', svm.SVC(probability=True))])
     classifier = ClassifierTunning(GridSearchCV(model, {
             'selector__k': nfeatures + ['all'],
+            'selector__score_func': [f_classif, mutual_info_classif],
             'classifier__kernel': ['linear', 'rbf'], #'poly', 'sigmoid'],
             #'classifier__degree': [2, 3],
             'classifier__coef0': [0, 10, 100],
@@ -129,6 +132,7 @@ else:
     model = Pipe([('selector', SelectKBest(f_classif)), ('classifier', MLPClassifier())])
     classifier = ClassifierTunning(GridSearchCV(model, {
             'selector__k': nfeatures + ['all'],
+            'selector__score_func': [f_classif, mutual_info_classif],
             'classifier__hidden_layer_sizes': [10, 20, 30],
             'classifier__activation': ['identity', 'logistic', 'tanh', 'relu'],
             'classifier__solver': ['adam'], #'lbfgs', 'sgd', 'adam'],
