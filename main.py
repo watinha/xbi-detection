@@ -8,7 +8,7 @@ from sklearn import tree, svm, ensemble
 from sklearn import metrics
 from sklearn.calibration import CalibratedClassifierCV
 from sklearn.neural_network import MLPClassifier
-from sklearn.feature_selection import SelectKBest, f_classif
+from sklearn.feature_selection import SelectKBest, f_classif, mutual_info_classif
 from sklearn.model_selection import GridSearchCV,GroupKFold,GroupShuffleSplit,cross_validate
 from sklearn.pipeline import Pipeline as Pipe
 from functools import reduce
@@ -95,7 +95,7 @@ if classifier_name == 'randomforest':
             'classifier__n_estimators': [5, 10, 15],
             'classifier__criterion': ["gini", "entropy"],
             'classifier__max_depth': [5, 10, None], #'max_depth': [5, 10, 30, 50, None],
-            'classifier__min_samples_split': [3, 10, 30], #'min_samples_split': [2, 3, 10, 30],
+            'classifier__min_samples_split': [3, 10], #'min_samples_split': [2, 3, 10, 30],
             'classifier__min_samples_leaf': [1, 5, 10],
             'classifier__max_features': max_features + ['auto'],
             'classifier__class_weight': [None, 'balanced']
@@ -108,26 +108,29 @@ elif classifier_name == 'dt':
             'selector__score_func': [f_classif, mutual_info_classif],
             'classifier__criterion': ["gini", "entropy"],
             'classifier__max_depth': [5, 10, None],
-            'classifier__min_samples_split': [10, 30, 50],
+            'classifier__min_samples_split': [3, 10],
             'classifier__class_weight': [None, 'balanced'],
             'classifier__max_features': max_features + ['auto'],
             'classifier__min_samples_leaf': [1, 5, 10]
         }, cv=GroupShuffleSplit(n_splits=3, random_state=42), scoring='f1', error_score=0, verbose=3),
         tree.DecisionTreeClassifier(random_state=42), 'URL')
 elif classifier_name == 'svm':
-    model = Pipe([('selector', SelectKBest(f_classif)), ('classifier', svm.SVC(probability=True))])
+    #model = Pipe([('selector', SelectKBest(f_classif)), ('classifier', svm.SVC(probability=True))])
+    model = Pipe([('selector', SelectKBest(f_classif)), ('classifier', svm.LinearSVC(random_state=42))])
     classifier = ClassifierTunning(GridSearchCV(model, {
             'selector__k': nfeatures + ['all'],
             'selector__score_func': [f_classif, mutual_info_classif],
-            'classifier__kernel': ['linear', 'rbf'], #'poly', 'sigmoid'],
+            #'classifier__kernel': ['linear', 'rbf'], #'poly', 'sigmoid'],
             #'classifier__degree': [2, 3],
-            'classifier__coef0': [0, 10, 100],
+            #'classifier__coef0': [0, 10, 100],
             'classifier__C': [1, 10, 100],
             'classifier__tol': [0.001, 0.1, 1],
+            'classifier__dual': [False],
             'classifier__class_weight': ['balanced', None],
             'classifier__max_iter': [10000]
         }, cv=GroupShuffleSplit(n_splits=3, random_state=42), scoring='f1', error_score=0, verbose=3),
-        svm.SVC(random_state=42, probability=True), 'URL')
+        #svm.SVC(random_state=42, probability=True), 'URL')
+        svm.LinearSVC(random_state=42), 'URL')
 else:
     model = Pipe([('selector', SelectKBest(f_classif)), ('classifier', MLPClassifier())])
     classifier = ClassifierTunning(GridSearchCV(model, {
@@ -161,6 +164,7 @@ def cross_val_score_using_sampling(model, X, y, cv, groups, scoring):
     best_precision = []
     best_recall = []
     best_roc = []
+    model2 = None
     for train_index, test_index in cv.split(X, y, groups):
         X_train, X_test = X[train_index], X[test_index]
         y_train, y_test = y[train_index], y[test_index]
@@ -181,11 +185,16 @@ def cross_val_score_using_sampling(model, X, y, cv, groups, scoring):
         recall.append(metrics.recall_score(y_test, y_pred))
         roc.append(metrics.roc_auc_score(y_test, y_pred))
 
-        y_pred = model.predict_proba(X_test)
+        if classifier_name == 'svm':
+            cclassifier = CalibratedClassifierCV(model.best_estimator_.named_steps['classifier'], cv=5)
+            model2 = Pipe([('selector', model.best_estimator_.named_steps['selector']), ('classifier', cclassifier)])
+            model2.fit(X_samp, y_samp)
+
+        y_pred = model2.predict_proba(X_samp)
         probability = y_pred[:,1]
 
-        best_roc.append(metrics.roc_auc_score(y_test, probability))
-        precision2, recall2, threasholds = metrics.precision_recall_curve(y_test, probability)
+        best_roc.append(metrics.roc_auc_score(y_samp, probability))
+        precision2, recall2, threasholds = metrics.precision_recall_curve(y_samp, probability)
         best_f = 0
         best_r = 0
         best_p = 0
@@ -196,7 +205,7 @@ def cross_val_score_using_sampling(model, X, y, cv, groups, scoring):
                 best_f = new_fscore
                 threshold = threasholds[i]
 
-        y_pred = model.predict_proba(X_test)
+        y_pred = model2.predict_proba(X_test)
         y_pred = [ 0 if y < threshold else 1 for y in y_pred[:,1]]
         best_f = metrics.f1_score(y_test, y_pred)
         best_p = metrics.precision_score(y_test, y_pred)
@@ -210,7 +219,7 @@ def cross_val_score_using_sampling(model, X, y, cv, groups, scoring):
             'best_f1': best_fscore, 'best_precision': best_precision, 'best_recall': best_recall, 'best_roc': best_roc }
 
 groupcv = None
-groupcv = GroupKFoldCV(GroupShuffleSplit(n_splits=10, random_state=42), 'URL', cross_val_score_using_sampling)
+groupcv = GroupKFoldCV(GroupShuffleSplit(n_splits=32, random_state=42), 'URL', cross_val_score_using_sampling)
 
 preprocessor = Preprocessor()
 approach = '%s-%s-%s-k%s' % (extractor_name, classifier_name, class_attr, str(k))
