@@ -99,7 +99,7 @@ if classifier_name == 'randomforest':
             'classifier__min_samples_leaf': [1, 5, 10],
             'classifier__max_features': max_features + ['auto'],
             'classifier__class_weight': [None, 'balanced']
-        }, cv=GroupShuffleSplit(n_splits=3, random_state=42), scoring='f1', error_score=0, verbose=3),
+        }, cv=GroupShuffleSplit(n_splits=5, random_state=42), scoring='f1', error_score=0, verbose=3),
         ensemble.RandomForestClassifier(random_state=42), 'URL')
 elif classifier_name == 'dt':
     model = Pipe([('selector', SelectKBest(f_classif)), ('classifier', tree.DecisionTreeClassifier())])
@@ -112,7 +112,7 @@ elif classifier_name == 'dt':
             'classifier__class_weight': [None, 'balanced'],
             'classifier__max_features': max_features + ['auto'],
             'classifier__min_samples_leaf': [1, 5, 10]
-        }, cv=GroupShuffleSplit(n_splits=3, random_state=42), scoring='f1', error_score=0, verbose=3),
+        }, cv=GroupShuffleSplit(n_splits=5, random_state=42), scoring='f1', error_score=0, verbose=3),
         tree.DecisionTreeClassifier(random_state=42), 'URL')
 elif classifier_name == 'svm':
     #model = Pipe([('selector', SelectKBest(f_classif)), ('classifier', svm.SVC(probability=True))])
@@ -128,7 +128,7 @@ elif classifier_name == 'svm':
             'classifier__dual': [False],
             'classifier__class_weight': ['balanced', None],
             'classifier__max_iter': [10000]
-        }, cv=GroupShuffleSplit(n_splits=3, random_state=42), scoring='f1', error_score=0, verbose=3),
+        }, cv=GroupShuffleSplit(n_splits=5, random_state=42), scoring='f1', error_score=0, verbose=3),
         #svm.SVC(random_state=42, probability=True), 'URL')
         svm.LinearSVC(random_state=42), 'URL')
 else:
@@ -143,7 +143,7 @@ else:
             'classifier__max_iter': [10000],
             'classifier__learning_rate': ['constant', 'invscaling', 'adaptive'],
             'classifier__random_state': [42]
-        }, cv=GroupShuffleSplit(n_splits=3, random_state=42), scoring='f1', error_score=0, verbose=3),
+        }, cv=GroupShuffleSplit(n_splits=5, random_state=42), scoring='f1', error_score=0, verbose=3),
         MLPClassifier(random_state=42), 'URL')
 
 class NoneSampler:
@@ -154,6 +154,18 @@ sampler = NoneSampler()
 #sampler = TomekLinks()
 #sampler = SMOTE()
 #sampler = ClusterCentroids()
+class GroupFolds:
+
+    def __init__ (self, cv, groups):
+        self._cv = cv
+        self._groups = groups
+
+    def split (self, X, y):
+        for train_index, test_index in self._cv.split(X, y, self._groups):
+            yield (train_index, test_index)
+
+
+
 
 def cross_val_score_using_sampling(model, X, y, cv, groups, scoring):
     fscore = []
@@ -186,7 +198,8 @@ def cross_val_score_using_sampling(model, X, y, cv, groups, scoring):
         roc.append(metrics.roc_auc_score(y_test, y_pred))
 
         if classifier_name == 'svm':
-            cclassifier = CalibratedClassifierCV(model.best_estimator_.named_steps['classifier'], cv=5)
+            cv = GroupFolds(GroupShuffleSplit(n_splits=10), groups_train)
+            cclassifier = CalibratedClassifierCV(model.best_estimator_.named_steps['classifier'], cv=cv)
             model2 = Pipe([('selector', model.best_estimator_.named_steps['selector']), ('classifier', cclassifier)])
             model2.fit(X_samp, y_samp)
 
