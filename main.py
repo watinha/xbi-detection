@@ -202,6 +202,8 @@ def cross_val_score_using_sampling(model, X, y, cv, groups, scoring):
             cclassifier = CalibratedClassifierCV(model.best_estimator_.named_steps['classifier'], cv=cv)
             model2 = Pipe([('selector', model.best_estimator_.named_steps['selector']), ('classifier', cclassifier)])
             model2.fit(X_samp, y_samp)
+        else:
+            model2 = model
 
         y_pred = model2.predict_proba(X_samp)
         probability = y_pred[:,1]
