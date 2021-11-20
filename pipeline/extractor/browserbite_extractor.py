@@ -10,7 +10,7 @@ class BrowserbiteExtractor ():
         prev_features = (arff_dataset['features'] if 'features' in arff_dataset else [])
         arff_dataset['features'] = prev_features + [
                 'diff_height', 'diff_width', 'diff_x', 'diff_y',
-                #'missmatch',
+                'missmatch',
                 'correlation',
                 'base_bin1', 'base_bin2', 'base_bin3', 'base_bin4', 'base_bin5',
                 'base_bin6', 'base_bin7', 'base_bin8', 'base_bin9', 'base_bin10']
@@ -24,7 +24,7 @@ class BrowserbiteExtractor ():
         X_t.append(np.array(data[:, attributes.index('baseWidth')], dtype='float64'))
         X_t.append(np.array(data[:, attributes.index('baseX')], dtype='float64'))
         X_t.append(np.array(data[:, attributes.index('baseY')], dtype='float64'))
-        #X_t.append(np.ones(len(data)))
+        X_t.append(np.array(data[:, attributes.index('missmatch')], dtype='float64'))
         X_t.append(np.array(data[:, attributes.index('ncc')], dtype='float64'))
         X_t.append(np.array(data[:, attributes.index('base_bin1')]))
         X_t.append(np.array(data[:, attributes.index('base_bin2')]))
