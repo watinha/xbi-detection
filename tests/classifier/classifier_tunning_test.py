@@ -17,10 +17,9 @@ class ClassifierTunningTest(TestCase):
         model = Mock()
         action = ClassifierTunning(grid_mock, model)
         result = action.execute(data)
-        grid_mock.fit.assert_called_with(data['X'], data['y'])
-        model.set_params.assert_called_with(**grid_mock.best_params_)
 
         self.assertEqual(model, result['model'])
+        self.assertEqual(grid_mock, result['grid'])
 
     def test_calling_tunning_methods_with_groups (self):
         groups = ['group1', 'group2']
@@ -35,7 +34,6 @@ class ClassifierTunningTest(TestCase):
         model = Mock()
         action = ClassifierTunning(grid_mock, model, groups='URL')
         result = action.execute(data)
-        grid_mock.fit.assert_called_with(data['X'], data['y'], groups=groups)
-        model.set_params.assert_called_with(**grid_mock.best_params_)
 
         self.assertEqual(model, result['model'])
+        self.assertEqual(grid_mock, result['grid'])

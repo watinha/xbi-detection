@@ -13,7 +13,8 @@ class GroupKFoldCVTest(TestCase):
             'data': np.array([['abobrinha', 2], ['pepino', 3]]),
             'X': np.array([[1, 2, 3], [4, 5, 6]]),
             'y': np.array([1, 2]),
-            'model': {}
+            'model': Mock(),
+            'grid': Mock()
         }
         score_stub = {}
         folds_stub = {}
@@ -22,7 +23,8 @@ class GroupKFoldCVTest(TestCase):
         action = GroupKFoldCV(folds_stub, 'URL', cross_val_score_mock)
         result = action.execute(args)
         [(model, X, y), keyed_args] = cross_val_score_mock.call_args
-        self.assertEqual(args['model'], model)
+        self.assertNotEqual(args['model'], model)
+        self.assertEqual(args['grid'], model)
         np.testing.assert_array_equal(args['X'], X)
         np.testing.assert_array_equal(args['y'], y)
         self.assertEqual(folds_stub, keyed_args['cv'])
@@ -36,7 +38,8 @@ class GroupKFoldCVTest(TestCase):
             'data': np.array([['abobrinha', 2], ['pepino', 3], ['negativo', 4]]),
             'X': np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]),
             'y': np.array([1, 2, 3]),
-            'model': Mock()
+            'model': Mock(),
+            'grid': Mock()
         }
         score_stub = {}
         folds_stub = {}
@@ -45,7 +48,8 @@ class GroupKFoldCVTest(TestCase):
         action = GroupKFoldCV(folds_stub, 'id', cross_val_score_mock)
         result = action.execute(args)
         [(model, X, y), keyed_args] = cross_val_score_mock.call_args
-        self.assertEqual(args['model'], model)
+        self.assertNotEqual(args['model'], model)
+        self.assertEqual(args['grid'], model)
         np.testing.assert_array_equal(args['X'], X)
         np.testing.assert_array_equal(args['y'], y)
         self.assertEqual(folds_stub, keyed_args['cv'])
