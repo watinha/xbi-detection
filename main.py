@@ -2,7 +2,7 @@ import random, arff, sys
 
 import pandas as pd
 
-from imblearn.under_sampling import TomekLinks, ClusterCentroids
+from imblearn.under_sampling import TomekLinks, ClusterCentroids, NearMiss, RandomUnderSampler
 from imblearn.over_sampling import SMOTE
 from sklearn import tree, svm, ensemble
 from sklearn import metrics
@@ -53,7 +53,7 @@ elif extractor_name == 'browserninja1':
             PositionViewportExtractor(),
         ])
 elif extractor_name == 'browserninja2':
-    features = [ 'emd', 'ssim', 'mse', 'ncc', 'sdd', 'missmatch',  # 'psnr'
+    features = [ 'emd', 'ssim', 'mse', 'ncc', 'sdd', 'missmatch', 'psnr',
                  'base_centroid_x', 'base_centroid_y', 'base_orientation',
                  'target_centroid_x', 'target_centroid_y', 'target_orientation',
                  'base_bin1', 'base_bin2', 'base_bin3', 'base_bin4', 'base_bin5',
@@ -73,7 +73,13 @@ elif extractor_name == 'browserninja2':
             ImageMomentsExtractor()
         ])
 else:
-    features = [ 'emd', 'ssim', 'mse', 'ncc', 'sdd', 'missmatch' ] # 'psnr'
+    features = [ 'emd', 'ssim', 'mse', 'ncc', 'sdd', 'missmatch', 'psnr',
+                 'base_centroid_x', 'base_centroid_y', 'base_orientation',
+                 'target_centroid_x', 'target_centroid_y', 'target_orientation',
+                 'base_bin1', 'base_bin2', 'base_bin3', 'base_bin4', 'base_bin5',
+                 'base_bin6', 'base_bin7', 'base_bin8', 'base_bin9', 'base_bin10',
+                 'target_bin1', 'target_bin2', 'target_bin3', 'target_bin4', 'target_bin5',
+                 'target_bin6', 'target_bin7', 'target_bin8', 'target_bin9', 'target_bin10' ] # 'psnr'
     extractor = BrowserNinjaCompositeExtractor(class_attr,
         extractors=[
             ComplexityExtractor(),
@@ -91,10 +97,10 @@ classifier = None
 nfeatures = []
 max_features = []
 if extractor_name == 'browserninja2':
-    max_features = [5, 10, 15]
+    #max_features = [5, 10, 15]
     nfeatures = [5, 10, 15]
 if extractor_name == 'browserninja1':
-    max_features = [5, 10]
+    #max_features = [5, 10]
     nfeatures = []
 
 if classifier_name == 'randomforest':
@@ -108,8 +114,8 @@ if classifier_name == 'randomforest':
             'classifier__min_samples_split': [3, 10], #'min_samples_split': [2, 3, 10, 30],
             'classifier__min_samples_leaf': [1, 5, 10],
             'classifier__max_features': max_features + ['auto'],
-            'classifier__class_weight': [None, 'balanced']
-        }, cv=GroupShuffleSplit(n_splits=3, random_state=42), scoring='f1', error_score=0, verbose=3),
+            #'classifier__class_weight': [None, 'balanced']
+        }, cv=GroupShuffleSplit(n_splits=2, random_state=42), scoring='f1', error_score=0, verbose=3),
         ensemble.RandomForestClassifier(random_state=42), 'URL')
 elif classifier_name == 'dt':
     model = Pipe([('selector', SelectKBest(f_classif)), ('classifier', tree.DecisionTreeClassifier())])
@@ -119,10 +125,10 @@ elif classifier_name == 'dt':
             'classifier__criterion': ["gini", "entropy"],
             'classifier__max_depth': [5, 10, None],
             'classifier__min_samples_split': [3, 10],
-            'classifier__class_weight': [None, 'balanced'],
+            #'classifier__class_weight': [None, 'balanced'],
             'classifier__max_features': max_features + ['auto'],
             'classifier__min_samples_leaf': [1, 5, 10]
-        }, cv=GroupShuffleSplit(n_splits=3, random_state=42), scoring='f1', error_score=0, verbose=3),
+        }, cv=GroupShuffleSplit(n_splits=2, random_state=42), scoring='f1', error_score=0, verbose=3),
         tree.DecisionTreeClassifier(random_state=42), 'URL')
 elif classifier_name == 'svm':
     #model = Pipe([('selector', SelectKBest(f_classif)), ('classifier', svm.SVC(probability=True))])
@@ -136,9 +142,9 @@ elif classifier_name == 'svm':
             'classifier__C': [1, 10, 100],
             'classifier__tol': [0.001, 0.1, 1],
             'classifier__dual': [False],
-            'classifier__class_weight': ['balanced', None],
+            #'classifier__class_weight': ['balanced', None],
             'classifier__max_iter': [10000]
-        }, cv=GroupShuffleSplit(n_splits=3, random_state=42), scoring='f1', error_score=0, verbose=3),
+        }, cv=GroupShuffleSplit(n_splits=2, random_state=42), scoring='f1', error_score=0, verbose=3),
         #svm.SVC(random_state=42, probability=True), 'URL')
         svm.LinearSVC(random_state=42), 'URL')
 else:
@@ -152,9 +158,9 @@ else:
             'classifier__solver': ['adam'], #'lbfgs', 'sgd', 'adam'],
             'classifier__alpha': [0.0001, 0.01, 0.1],
             'classifier__max_iter': [10000],
-            'classifier__learning_rate': ['constant', 'invscaling', 'adaptive'],
+            #'classifier__learning_rate': ['constant', 'invscaling', 'adaptive'],
             'classifier__random_state': [42]
-        }, cv=GroupShuffleSplit(n_splits=3, random_state=42), scoring='f1', error_score=0, verbose=3),
+        }, cv=GroupShuffleSplit(n_splits=2, random_state=42), scoring='f1', error_score=0, verbose=3),
         MLPClassifier(random_state=42), 'URL')
 
 class NoneSampler:
@@ -164,7 +170,10 @@ class NoneSampler:
 sampler = NoneSampler()
 #sampler = TomekLinks()
 #sampler = SMOTE()
-#sampler = ClusterCentroids()
+#sampler = ClusterCentroids(sampling_strategy=0.5, voting='hard')
+#sampler = NearMiss(sampling_strategy=0.1, version=1)
+#sampler = RandomUnderSampler(sampling_strategy=0.1, random_state=42)
+
 class GroupFolds:
 
     def __init__ (self, cv, groups):
@@ -174,8 +183,6 @@ class GroupFolds:
     def split (self, X, y):
         for train_index, test_index in self._cv.split(X, y, self._groups):
             yield (train_index, test_index)
-
-
 
 
 def cross_val_score_using_sampling(model, X, y, cv, groups, scoring):
@@ -193,10 +200,11 @@ def cross_val_score_using_sampling(model, X, y, cv, groups, scoring):
         y_train, y_test = y[train_index], y[test_index]
         groups_train = [i for i in groups if groups.index(i) in train_index]
 
-        X_samp, y_samp = sampler.fit_sample(X_train, y_train)
+        X_samp, y_samp = sampler.fit_resample(X_train, y_train)
+        groups_samp = [ groups_train[X_train.tolist().index(row)] for row in X_samp.tolist() ]
 
         print('Model trainning with: X (%s)' % (str(X_samp.shape)))
-        model.fit(X_samp, y_samp, groups=groups_train)
+        model.fit(X_samp, y_samp, groups=groups_samp)
 
         selector = model.best_estimator_.named_steps['selector']
         rankings.append(selector.get_support(indices=False))
@@ -209,7 +217,7 @@ def cross_val_score_using_sampling(model, X, y, cv, groups, scoring):
         roc.append(metrics.roc_auc_score(y_test, y_pred))
 
         if classifier_name == 'svm':
-            cv = GroupFolds(GroupShuffleSplit(n_splits=16), groups_train)
+            cv = GroupFolds(GroupShuffleSplit(n_splits=10), groups_samp)
             cclassifier = CalibratedClassifierCV(model.best_estimator_.named_steps['classifier'], cv=cv)
             model2 = Pipe([('selector', model.best_estimator_.named_steps['selector']), ('classifier', cclassifier)])
             model2.fit(X_samp, y_samp)
@@ -245,7 +253,7 @@ def cross_val_score_using_sampling(model, X, y, cv, groups, scoring):
             'best_f1': best_fscore, 'best_precision': best_precision, 'best_recall': best_recall, 'best_roc': best_roc }
 
 groupcv = None
-groupcv = GroupKFoldCV(GroupShuffleSplit(n_splits=16, random_state=42), 'URL', cross_val_score_using_sampling)
+groupcv = GroupKFoldCV(GroupShuffleSplit(n_splits=18, random_state=42), 'URL', cross_val_score_using_sampling) # 72 websites + 3 platform comparison
 
 preprocessor = Preprocessor()
 approach = '%s-%s-%s-k%s' % (extractor_name, classifier_name, class_attr, str(k))
@@ -254,7 +262,7 @@ pipeline = Pipeline([
     ArffLoader(), XBIExtractor(features, class_attr),
     extractor, preprocessor, classifier, groupcv
 ])
-result = pipeline.execute(open('data/07042020/07042020-dataset.binary.ncc.hist.img.arff').read())
+result = pipeline.execute(open('data/19112021/dataset.classified.hist.img.%s.arff' % (class_attr)).read())
 print('Model: ' + str(result['model']))
 print('Features: ' + str(result['features']))
 print('K: ' + str(k))
@@ -303,6 +311,7 @@ except:
     features_csv = pd.DataFrame(columns=result['features'])
 
 features_len = features_csv.shape[1]
+print(rankings)
 if extractor_name == 'browserninja2':
     for i in range(len(rankings)):
         features_csv.loc['%s-k%d-%d' % (classifier_name, k, (i + features_len)), :] = rankings[i]
