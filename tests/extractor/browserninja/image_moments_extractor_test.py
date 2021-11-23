@@ -32,14 +32,18 @@ class BrowserNinjaExtractorTest(TestCase):
         result = np.array(result).T.tolist()
         self.assertEqual(2, len(result))
         np.testing.assert_almost_equal(X_expected, result)
+        self.assertEqual(['centroid_x', 'centroid_y', 'orientation'], arff_data['features'])
+
 
     def test_extracts_differences_between_centroid_and_orientation_attributes_with_X(self):
         X_expected = np.array([[1, 2, 3, 3, 3], [3, 4, 7, 6, 11]])
         X_initial = np.array([[1, 2], [3, 4]])
         (arff_data, attributes) = self.generate_arff("""1,2,3,4,5,6,1
 10,11,12,3,5,1,0""")
+        arff_data['features'] = ['S', 'J']
         result = self.extractor.execute(arff_data, attributes, X_initial.T.tolist())
         result = np.array(result).T.tolist()
         self.assertEqual(2, len(result))
         np.testing.assert_almost_equal(X_expected, result)
+        self.assertEqual(['S', 'J', 'centroid_x', 'centroid_y', 'orientation'], arff_data['features'])
 

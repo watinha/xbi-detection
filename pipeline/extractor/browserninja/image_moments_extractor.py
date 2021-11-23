@@ -15,4 +15,6 @@ class ImageMomentsExtractor():
         X.append(np.abs(base_centroid_y - target_centroid_y))
         X.append(np.abs(base_orientation - target_orientation))
 
+        arff_data['features'] = arff_data['features'] + ['centroid_x', 'centroid_y', 'orientation']
+
         return X
