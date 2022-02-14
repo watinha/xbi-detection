@@ -2,8 +2,6 @@ import random, arff, sys
 
 import pandas as pd
 
-from imblearn.under_sampling import TomekLinks, ClusterCentroids, NearMiss, RandomUnderSampler
-from imblearn.over_sampling import SMOTE
 from sklearn.calibration import CalibratedClassifierCV
 from sklearn.model_selection import GroupShuffleSplit
 from sklearn.pipeline import Pipeline as Pipe
@@ -12,8 +10,6 @@ from functools import reduce
 from config import get_extractor, get_classifier, get_sampler
 from pipeline import Pipeline
 from pipeline.loader.arff_loader import ArffLoader
-from pipeline.feature_selection import FeatureSelection
-from pipeline.preprocessing import Preprocessor
 from pipeline.model_evaluation.groupkfold_cv import GroupKFoldCV
 
 assert len(sys.argv) == 5, 'The script accepts 4 parameters: feature extractor (browserbite|crosscheck|browserninja1|browserninja2), classifier (randomforest|svm|dt|nn), type of xbi (internal|external) and K value'
@@ -21,7 +17,6 @@ assert len(sys.argv) == 5, 'The script accepts 4 parameters: feature extractor (
 random.seed(42)
 
 class_attr = sys.argv[3]
-k = int(sys.argv[4])
 extractor_name = sys.argv[1]
 classifier_name = sys.argv[2]
 rankings = []
@@ -112,17 +107,15 @@ def cross_val_score_using_sampling(model, X, y, cv, groups, scoring):
 groupcv = None
 groupcv = GroupKFoldCV(GroupShuffleSplit(n_splits=10, random_state=42), 'URL', cross_val_score_using_sampling) # 72 websites + 3 platform comparison
 
-preprocessor = Preprocessor()
-approach = '%s-%s-%s-k%s' % (extractor_name, classifier_name, class_attr, str(k))
+approach = '%s-%s-%s' % (extractor_name, classifier_name, class_attr)
 print('running --- %s...' % (approach))
 pipeline = Pipeline([
     ArffLoader(), XBIExtractor(features, class_attr),
-    extractor, preprocessor, classifier, groupcv
+    extractor, classifier, groupcv
 ])
 result = pipeline.execute(open('data/19112021/dataset.classified.hist.img.%s.arff' % (class_attr)).read())
 print('Model: ' + str(result['model']))
 print('Features: ' + str(result['features']))
-print('K: ' + str(k))
 print('X dimensions:' + str(result['X'].shape))
 print('Test     ROC: %f' % (reduce(lambda x,y: x+y, result['score']['test_roc_auc']) / 10))
 print('Test      F1: %f' % (reduce(lambda x,y: x+y, result['score']['test_f1']) / 10))

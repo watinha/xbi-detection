@@ -1,8 +1,11 @@
+from imblearn.under_sampling import TomekLinks, ClusterCentroids, NearMiss, RandomUnderSampler
+from imblearn.over_sampling import SMOTE
 from sklearn import tree, svm, ensemble
 from sklearn.feature_selection import SelectKBest, f_classif, mutual_info_classif
 from sklearn.neural_network import MLPClassifier
 from sklearn.model_selection import GridSearchCV,GroupShuffleSplit
 from sklearn.pipeline import Pipeline as Pipe
+from sklearn.preprocessing import StandardScaler
 
 from pipeline.extractor.xbi_extractor import XBIExtractor
 from pipeline.extractor.crosscheck_extractor import CrossCheckExtractor
@@ -84,6 +87,7 @@ def get_extractor(name, class_attr):
 def get_classifier(name, nfeatures, max_features):
     if classifier_name == 'randomforest':
         model = Pipe([
+            ('preprocessor', StandardScaler()),
             ('selector', SelectKBest(f_classif)),
             ('classifier', ensemble.RandomForestClassifier())])
         classifier = GridSearchCV(model, {
@@ -101,6 +105,7 @@ def get_classifier(name, nfeatures, max_features):
 
     elif classifier_name == 'dt':
         model = Pipe([
+            ('preprocessor', StandardScaler()),
             ('selector', SelectKBest(f_classif)),
             ('classifier', tree.DecisionTreeClassifier())])
         classifier = GridSearchCV(model, {
@@ -119,6 +124,7 @@ def get_classifier(name, nfeatures, max_features):
         #    ('selector', SelectKBest(f_classif)),
         #    ('classifier', svm.SVC(probability=True))])
         model = Pipe([
+            ('preprocessor', StandardScaler()),
             ('selector', SelectKBest(f_classif)),
             ('classifier', svm.LinearSVC(random_state=42))])
         classifier = GridSearchCV(model, {
@@ -136,6 +142,7 @@ def get_classifier(name, nfeatures, max_features):
             scoring='f1', error_score=0, verbose=1)
     else:
         model = Pipe([
+            ('preprocessor', StandardScaler()),
             ('selector', SelectKBest(f_classif)),
             ('classifier', MLPClassifier())])
         classifier = GridSearchCV(model, {
