@@ -1,6 +1,7 @@
 import random, arff, sys, pandas as pd
 
 from sklearn import metrics
+from sklearn.calibration import CalibratedClassifierCV
 from sklearn.model_selection import GroupShuffleSplit
 from functools import reduce
 
@@ -51,7 +52,13 @@ for train_index, test_index in cv.split(X, y, groups):
     selector = gridsearch.best_estimator_.named_steps['selector']
     rankings.append(selector.get_support(indices=False))
 
-    y_pred = gridsearch.predict_proba(X_samp)
+    if (classifier_name == 'svm'):
+        model = CalibratedClassifierCV(gridsearch.best_estimator_)
+        model.fit(X_samp, y_samp)
+    else:
+        model = gridsearch
+
+    y_pred = model.predict_proba(X_samp)
     print('gridsearch classes %s' %
             (str(gridsearch.best_estimator_.named_steps['classifier'].classes_)))
     probability = y_pred[:, list(
@@ -67,7 +74,7 @@ for train_index, test_index in cv.split(X, y, groups):
             best_f = new_fscore
             threshold = threasholds[i]
 
-    y_pred = gridsearch.predict_proba(X_test)
+    y_pred = model.predict_proba(X_test)
     probability = y_pred[:, list(
         gridsearch.best_estimator_.named_steps['classifier'].classes_).index(1)]
 

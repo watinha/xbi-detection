@@ -3,7 +3,6 @@ from imblearn.over_sampling import SMOTE
 from sklearn import tree, svm, ensemble
 from sklearn.feature_selection import SelectKBest, f_classif, mutual_info_classif
 from sklearn.neural_network import MLPClassifier
-from sklearn.calibration import CalibratedClassifierCV
 from sklearn.model_selection import GridSearchCV,GroupShuffleSplit
 from sklearn.pipeline import Pipeline as Pipe
 from sklearn.preprocessing import StandardScaler
@@ -99,7 +98,7 @@ def get_classifier(classifier_name, nfeatures, max_features):
                 'classifier__min_samples_split': [3, 10],
                 'classifier__min_samples_leaf': [1, 5, 10],
                 'classifier__max_features': max_features + ['auto'],
-                'classifier__class_weight': [None, 'balanced']
+                'classifier__class_weight': ['balanced'], #[None, 'balanced']
             }, cv=GroupShuffleSplit(n_splits=2, random_state=42),
             scoring='f1', error_score=0, verbose=1)
 
@@ -114,7 +113,7 @@ def get_classifier(classifier_name, nfeatures, max_features):
                 'classifier__criterion': ["gini", "entropy"],
                 'classifier__max_depth': [5, 10, None],
                 'classifier__min_samples_split': [3, 10],
-                'classifier__class_weight': [None, 'balanced'],
+                'classifier__class_weight': ['balanced'], #[None, 'balanced']
                 'classifier__max_features': max_features + ['auto'],
                 'classifier__min_samples_leaf': [1, 5, 10]
             }, cv=GroupShuffleSplit(n_splits=2, random_state=42),
@@ -126,8 +125,7 @@ def get_classifier(classifier_name, nfeatures, max_features):
         model = Pipe([
             ('preprocessor', StandardScaler()),
             ('selector', SelectKBest(f_classif)),
-            ('classifier', CalibratedClassifierCV(
-                svm.LinearSVC(random_state=42), cv=10))])
+            ('classifier', svm.LinearSVC(random_state=42))])
         classifier = GridSearchCV(model, {
                 'selector__k': nfeatures + ['all'],
                 'selector__score_func': [f_classif, mutual_info_classif],
@@ -137,7 +135,7 @@ def get_classifier(classifier_name, nfeatures, max_features):
                 'classifier__C': [1, 10, 100],
                 'classifier__tol': [0.001, 0.1, 1],
                 'classifier__dual': [False],
-                'classifier__class_weight': ['balanced', None],
+                'classifier__class_weight': ['balanced'], #[None, 'balanced']
                 'classifier__max_iter': [10000]
             }, cv=GroupShuffleSplit(n_splits=2, random_state=42),
             scoring='f1', error_score=0, verbose=1)
