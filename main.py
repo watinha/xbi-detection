@@ -26,7 +26,8 @@ extractor_name = sys.argv[1]
 classifier_name = sys.argv[2]
 rankings = []
 
-(extractor, features, nfeatures, max_features) = get_extractor(extractor_name)
+(extractor, features, nfeatures, max_features) = get_extractor(
+        extractor_name, class_attr)
 classifier = get_classifier(classifier_name)
 sampler = get_sampler()
 

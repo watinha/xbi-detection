@@ -12,7 +12,7 @@ from pipeline.extractor.browserninja.font_family_extractor import FontFamilyExtr
 from pipeline.extractor.browserninja.image_moments_extractor import ImageMomentsExtractor
 from pipeline.extractor.browserninja.relative_position_extractor import RelativePositionExtractor
 
-def get_extractor(name):
+def get_extractor(name, class_attr):
     features = []
     max_features = []
     nfeatures=[]
