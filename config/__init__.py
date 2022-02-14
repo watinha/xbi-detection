@@ -1,3 +1,9 @@
+from sklearn import tree, svm, ensemble
+from sklearn.feature_selection import SelectKBest, f_classif, mutual_info_classif
+from sklearn.neural_network import MLPClassifier
+from sklearn.model_selection import GridSearchCV,GroupShuffleSplit
+from sklearn.pipeline import Pipeline as Pipe
+
 from pipeline.extractor.xbi_extractor import XBIExtractor
 from pipeline.extractor.crosscheck_extractor import CrossCheckExtractor
 from pipeline.extractor.browserbite_extractor import BrowserbiteExtractor
@@ -74,6 +80,75 @@ def get_extractor(name):
     return (extractor, features, nfeatures, max_features)
 
 
-def get_classifier(name):
-    """docstring for get_classifier"""
-    pass
+def get_classifier(name, nfeatures, max_features):
+    if classifier_name == 'randomforest':
+        model = Pipe([
+            ('selector', SelectKBest(f_classif)),
+            ('classifier', ensemble.RandomForestClassifier())])
+        classifier = GridSearchCV(model, {
+                'selector__k': nfeatures + ['all'],
+                'selector__score_func': [f_classif, mutual_info_classif],
+                'classifier__n_estimators': [5, 10, 15],
+                'classifier__criterion': ["gini", "entropy"],
+                'classifier__max_depth': [5, 10, None],
+                'classifier__min_samples_split': [3, 10],
+                'classifier__min_samples_leaf': [1, 5, 10],
+                'classifier__max_features': max_features + ['auto'],
+                'classifier__class_weight': [None, 'balanced']
+            }, cv=GroupShuffleSplit(n_splits=2, random_state=42),
+            scoring='f1', error_score=0, verbose=1)
+
+    elif classifier_name == 'dt':
+        model = Pipe([
+            ('selector', SelectKBest(f_classif)),
+            ('classifier', tree.DecisionTreeClassifier())])
+        classifier = GridSearchCV(model, {
+                'selector__k': nfeatures + ['all'],
+                'selector__score_func': [f_classif, mutual_info_classif],
+                'classifier__criterion': ["gini", "entropy"],
+                'classifier__max_depth': [5, 10, None],
+                'classifier__min_samples_split': [3, 10],
+                'classifier__class_weight': [None, 'balanced'],
+                'classifier__max_features': max_features + ['auto'],
+                'classifier__min_samples_leaf': [1, 5, 10]
+            }, cv=GroupShuffleSplit(n_splits=2, random_state=42),
+            scoring='f1', error_score=0, verbose=1)
+    elif classifier_name == 'svm':
+        #model = Pipe([
+        #    ('selector', SelectKBest(f_classif)),
+        #    ('classifier', svm.SVC(probability=True))])
+        model = Pipe([
+            ('selector', SelectKBest(f_classif)),
+            ('classifier', svm.LinearSVC(random_state=42))])
+        classifier = GridSearchCV(model, {
+                'selector__k': nfeatures + ['all'],
+                'selector__score_func': [f_classif, mutual_info_classif],
+                #'classifier__kernel': ['linear', 'rbf'], #'poly', 'sigmoid'],
+                #'classifier__degree': [2, 3],
+                #'classifier__coef0': [0, 10, 100],
+                'classifier__C': [1, 10, 100],
+                'classifier__tol': [0.001, 0.1, 1],
+                'classifier__dual': [False],
+                'classifier__class_weight': ['balanced', None],
+                'classifier__max_iter': [10000]
+            }, cv=GroupShuffleSplit(n_splits=2, random_state=42),
+            scoring='f1', error_score=0, verbose=1)
+    else:
+        model = Pipe([
+            ('selector', SelectKBest(f_classif)),
+            ('classifier', MLPClassifier())])
+        classifier = GridSearchCV(model, {
+                'selector__k': nfeatures + ['all'],
+                'selector__score_func': [f_classif, mutual_info_classif],
+                'classifier__hidden_layer_sizes': [10, 20, 30],
+                #'classifier__activation': ['identity', 'logistic', 'tanh', 'relu'],
+                'classifier__activation': ['tanh', 'relu'],
+                'classifier__solver': ['adam'], #'lbfgs', 'sgd', 'adam'],
+                'classifier__alpha': [0.0001, 0.01, 0.1],
+                'classifier__max_iter': [10000],
+                #'classifier__learning_rate': ['constant', 'invscaling', 'adaptive'],
+                'classifier__random_state': [42]
+            }, cv=GroupShuffleSplit(n_splits=2, random_state=42),
+            scoring='f1', error_score=0, verbose=1)
+
+    return classifier

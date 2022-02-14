@@ -4,12 +4,8 @@ import pandas as pd
 
 from imblearn.under_sampling import TomekLinks, ClusterCentroids, NearMiss, RandomUnderSampler
 from imblearn.over_sampling import SMOTE
-from sklearn import tree, svm, ensemble
-from sklearn import metrics
 from sklearn.calibration import CalibratedClassifierCV
-from sklearn.neural_network import MLPClassifier
-from sklearn.feature_selection import SelectKBest, f_classif, mutual_info_classif
-from sklearn.model_selection import GridSearchCV,GroupKFold,GroupShuffleSplit,cross_validate
+from sklearn.model_selection import GroupShuffleSplit
 from sklearn.pipeline import Pipeline as Pipe
 from functools import reduce
 
@@ -18,7 +14,6 @@ from pipeline import Pipeline
 from pipeline.loader.arff_loader import ArffLoader
 from pipeline.feature_selection import FeatureSelection
 from pipeline.preprocessing import Preprocessor
-from pipeline.classifier.classifier_tunning import ClassifierTunning
 from pipeline.model_evaluation.groupkfold_cv import GroupKFoldCV
 
 assert len(sys.argv) == 5, 'The script accepts 4 parameters: feature extractor (browserbite|crosscheck|browserninja1|browserninja2), classifier (randomforest|svm|dt|nn), type of xbi (internal|external) and K value'
@@ -32,68 +27,7 @@ classifier_name = sys.argv[2]
 rankings = []
 
 (extractor, features, nfeatures, max_features) = get_extractor(extractor_name)
-
-classifier = None
-
-if classifier_name == 'randomforest':
-    model = Pipe([('selector', SelectKBest(f_classif)), ('classifier', ensemble.RandomForestClassifier())])
-    classifier = ClassifierTunning(GridSearchCV(model, {
-            'selector__k': nfeatures + ['all'],
-            'selector__score_func': [f_classif, mutual_info_classif],
-            'classifier__n_estimators': [5, 10, 15],
-            'classifier__criterion': ["gini", "entropy"],
-            'classifier__max_depth': [5, 10, None], #'max_depth': [5, 10, 30, 50, None],
-            'classifier__min_samples_split': [3, 10], #'min_samples_split': [2, 3, 10, 30],
-            'classifier__min_samples_leaf': [1, 5, 10],
-            'classifier__max_features': max_features + ['auto'],
-            'classifier__class_weight': [None, 'balanced']
-        }, cv=GroupShuffleSplit(n_splits=2, random_state=42), scoring='f1', error_score=0, verbose=1),
-        ensemble.RandomForestClassifier(random_state=42), 'URL')
-elif classifier_name == 'dt':
-    model = Pipe([('selector', SelectKBest(f_classif)), ('classifier', tree.DecisionTreeClassifier())])
-    classifier = ClassifierTunning(GridSearchCV(model, {
-            'selector__k': nfeatures + ['all'],
-            'selector__score_func': [f_classif, mutual_info_classif],
-            'classifier__criterion': ["gini", "entropy"],
-            'classifier__max_depth': [5, 10, None],
-            'classifier__min_samples_split': [3, 10],
-            'classifier__class_weight': [None, 'balanced'],
-            'classifier__max_features': max_features + ['auto'],
-            'classifier__min_samples_leaf': [1, 5, 10]
-        }, cv=GroupShuffleSplit(n_splits=2, random_state=42), scoring='f1', error_score=0, verbose=1),
-        tree.DecisionTreeClassifier(random_state=42), 'URL')
-elif classifier_name == 'svm':
-    #model = Pipe([('selector', SelectKBest(f_classif)), ('classifier', svm.SVC(probability=True))])
-    model = Pipe([('selector', SelectKBest(f_classif)), ('classifier', svm.LinearSVC(random_state=42))])
-    classifier = ClassifierTunning(GridSearchCV(model, {
-            'selector__k': nfeatures + ['all'],
-            'selector__score_func': [f_classif, mutual_info_classif],
-            #'classifier__kernel': ['linear', 'rbf'], #'poly', 'sigmoid'],
-            #'classifier__degree': [2, 3],
-            #'classifier__coef0': [0, 10, 100],
-            'classifier__C': [1, 10, 100],
-            'classifier__tol': [0.001, 0.1, 1],
-            'classifier__dual': [False],
-            #'classifier__class_weight': ['balanced', None],
-            'classifier__max_iter': [10000]
-        }, cv=GroupShuffleSplit(n_splits=2, random_state=42), scoring='f1', error_score=0, verbose=1),
-        #svm.SVC(random_state=42, probability=True), 'URL')
-        svm.LinearSVC(random_state=42), 'URL')
-else:
-    model = Pipe([('selector', SelectKBest(f_classif)), ('classifier', MLPClassifier())])
-    classifier = ClassifierTunning(GridSearchCV(model, {
-            'selector__k': nfeatures + ['all'],
-            'selector__score_func': [f_classif, mutual_info_classif],
-            'classifier__hidden_layer_sizes': [10, 20, 30],
-            #'classifier__activation': ['identity', 'logistic', 'tanh', 'relu'],
-            'classifier__activation': ['tanh', 'relu'],
-            'classifier__solver': ['adam'], #'lbfgs', 'sgd', 'adam'],
-            'classifier__alpha': [0.0001, 0.01, 0.1],
-            'classifier__max_iter': [10000],
-            #'classifier__learning_rate': ['constant', 'invscaling', 'adaptive'],
-            'classifier__random_state': [42]
-        }, cv=GroupShuffleSplit(n_splits=2, random_state=42), scoring='f1', error_score=0, verbose=1),
-        MLPClassifier(random_state=42), 'URL')
+classifier = get_classifier(classifier_name)
 
 class NoneSampler:
     def fit_resample(self, X, y):
