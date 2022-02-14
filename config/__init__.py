@@ -152,3 +152,18 @@ def get_classifier(name, nfeatures, max_features):
             scoring='f1', error_score=0, verbose=1)
 
     return classifier
+
+
+class NoneSampler:
+    def fit_resample(self, X, y):
+        return X, y
+
+
+def get_sampler():
+    #return NoneSampler()
+    #return TomekLinks()
+    #return SMOTE()
+    return ClusterCentroids(sampling_strategy=0.1, voting='hard')
+    #return NearMiss(sampling_strategy=0.1, version=1)
+    #return RandomUnderSampler(sampling_strategy=0.1, random_state=42)
+

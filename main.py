@@ -9,7 +9,7 @@ from sklearn.model_selection import GroupShuffleSplit
 from sklearn.pipeline import Pipeline as Pipe
 from functools import reduce
 
-from config import get_extractor
+from config import get_extractor, get_classifier, get_sampler
 from pipeline import Pipeline
 from pipeline.loader.arff_loader import ArffLoader
 from pipeline.feature_selection import FeatureSelection
@@ -28,17 +28,7 @@ rankings = []
 
 (extractor, features, nfeatures, max_features) = get_extractor(extractor_name)
 classifier = get_classifier(classifier_name)
-
-class NoneSampler:
-    def fit_resample(self, X, y):
-        return X, y
-
-#sampler = NoneSampler()
-#sampler = TomekLinks()
-#sampler = SMOTE()
-sampler = ClusterCentroids(sampling_strategy=0.1, voting='hard')
-#sampler = NearMiss(sampling_strategy=0.1, version=1)
-#sampler = RandomUnderSampler(sampling_strategy=0.1, random_state=42)
+sampler = get_sampler()
 
 class GroupFolds:
 
