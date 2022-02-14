@@ -17,33 +17,46 @@ def get_extractor(name, class_attr):
     max_features = []
     nfeatures=[]
     extractor = None
+    extractors = []
 
     if name == 'browserbite':
         extractor = BrowserbiteExtractor(class_attr)
     elif name == 'crosscheck':
         extractor = CrossCheckExtractor(class_attr)
     elif name == 'browserninja1':
+        if (class_attr == 'internal'):
+            extractors = [
+                    ComplexityExtractor(),
+                    ImageComparisonExtractor(),
+                    SizeViewportExtractor(),
+                    VisibilityExtractor(),
+                    PositionViewportExtractor(),
+                ]
+        else:
+            extractors = [
+                    ComplexityExtractor(),
+                    SizeViewportExtractor(),
+                    VisibilityExtractor(),
+                    PositionViewportExtractor(),
+                ]
         extractor = BrowserNinjaCompositeExtractor(class_attr,
-            extractors=[
-                ComplexityExtractor(),
-                ImageComparisonExtractor(),
-                SizeViewportExtractor(),
-                VisibilityExtractor(),
-                PositionViewportExtractor(),
-            ])
+            extractors=extractors)
     elif name == 'browserninja2':
         max_features = [5, 10, 15]
         nfeatures = [5, 10, 15]
-        features = [ 'emd', 'ssim', 'mse', 'ncc', 'sdd', 'missmatch', 'psnr',
-                     'base_centroid_x', 'base_centroid_y', 'base_orientation',
-                     'target_centroid_x', 'target_centroid_y', 'target_orientation',
-                     'base_bin1', 'base_bin2', 'base_bin3', 'base_bin4', 'base_bin5',
-                     'base_bin6', 'base_bin7', 'base_bin8', 'base_bin9', 'base_bin10',
-                     'target_bin1', 'target_bin2', 'target_bin3',
-                     'target_bin4', 'target_bin5', 'target_bin6',
-                     'target_bin7', 'target_bin8', 'target_bin9', 'target_bin10' ]
-        extractor = BrowserNinjaCompositeExtractor(class_attr,
-            extractors=[
+        extractors = []
+        if (class_attr == 'internal'):
+            features = [ 'emd', 'ssim', 'mse', 'ncc', 'sdd', 'missmatch', 'psnr',
+                         'base_centroid_x', 'base_centroid_y', 'base_orientation',
+                         'target_centroid_x', 'target_centroid_y',
+                         'target_orientation',
+                         'base_bin1', 'base_bin2', 'base_bin3',
+                         'base_bin4', 'base_bin5', 'base_bin6',
+                         'base_bin7', 'base_bin8', 'base_bin9', 'base_bin10',
+                         'target_bin1', 'target_bin2', 'target_bin3',
+                         'target_bin4', 'target_bin5', 'target_bin6',
+                         'target_bin7', 'target_bin8', 'target_bin9', 'target_bin10' ]
+            extractors = [
                 ComplexityExtractor(),
                 ImageComparisonExtractor(),
                 SizeViewportExtractor(),
@@ -52,30 +65,18 @@ def get_extractor(name, class_attr):
                 RelativePositionExtractor(),
                 PlatformExtractor(),
                 ImageMomentsExtractor()
-            ])
-    else:
-        max_features = [5, 10, 15]
-        nfeatures = [5, 10, 15]
-        features = [ 'emd', 'ssim', 'mse', 'ncc', 'sdd', 'missmatch', 'psnr',
-                     'base_centroid_x', 'base_centroid_y', 'base_orientation',
-                     'target_centroid_x', 'target_centroid_y', 'target_orientation',
-                     'base_bin1', 'base_bin2', 'base_bin3', 'base_bin4', 'base_bin5',
-                     'base_bin6', 'base_bin7', 'base_bin8', 'base_bin9', 'base_bin10',
-                     'target_bin1', 'target_bin2', 'target_bin3',
-                     'target_bin4', 'target_bin5', 'target_bin6',
-                     'target_bin7', 'target_bin8', 'target_bin9', 'target_bin10' ]
-        extractor = BrowserNinjaCompositeExtractor(class_attr,
-            extractors=[
+            ]
+        else:
+            extractors = [
                 ComplexityExtractor(),
-                ImageComparisonExtractor(),
                 SizeViewportExtractor(),
                 VisibilityExtractor(),
                 PositionViewportExtractor(),
                 RelativePositionExtractor(),
                 PlatformExtractor(),
-                FontFamilyExtractor(),
-                ImageMomentsExtractor()
-            ])
+            ]
+        extractor = BrowserNinjaCompositeExtractor(class_attr,
+            extractors=extractors)
 
     return (extractor, features, nfeatures, max_features)
 
