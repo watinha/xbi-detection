@@ -8,6 +8,8 @@ from pipeline.extractor.browserninja.relative_position_extractor import Relative
 
 def get_extractor(name):
     features = []
+    max_features = []
+    nfeatures=[]
     extractor = None
 
     if name == 'browserbite':
@@ -24,6 +26,8 @@ def get_extractor(name):
                 PositionViewportExtractor(),
             ])
     elif name == 'browserninja2':
+        max_features = [5, 10, 15]
+        nfeatures = [5, 10, 15]
         features = [ 'emd', 'ssim', 'mse', 'ncc', 'sdd', 'missmatch', 'psnr',
                      'base_centroid_x', 'base_centroid_y', 'base_orientation',
                      'target_centroid_x', 'target_centroid_y', 'target_orientation',
@@ -44,6 +48,8 @@ def get_extractor(name):
                 ImageMomentsExtractor()
             ])
     else:
+        max_features = [5, 10, 15]
+        nfeatures = [5, 10, 15]
         features = [ 'emd', 'ssim', 'mse', 'ncc', 'sdd', 'missmatch', 'psnr',
                      'base_centroid_x', 'base_centroid_y', 'base_orientation',
                      'target_centroid_x', 'target_centroid_y', 'target_orientation',
@@ -65,4 +71,9 @@ def get_extractor(name):
                 ImageMomentsExtractor()
             ])
 
-    return (extractor, features)
+    return (extractor, features, nfeatures, max_features)
+
+
+def get_classifier(name):
+    """docstring for get_classifier"""
+    pass

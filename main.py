@@ -31,14 +31,9 @@ extractor_name = sys.argv[1]
 classifier_name = sys.argv[2]
 rankings = []
 
-(extractor, features) = get_extractor(extractor_name)
+(extractor, features, nfeatures, max_features) = get_extractor(extractor_name)
 
 classifier = None
-nfeatures = []
-max_features = []
-if extractor_name == 'browserninja2':
-    max_features = [5, 10, 15]
-    nfeatures = [5, 10, 15]
 
 if classifier_name == 'randomforest':
     model = Pipe([('selector', SelectKBest(f_classif)), ('classifier', ensemble.RandomForestClassifier())])
