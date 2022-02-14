@@ -3,11 +3,11 @@ from imblearn.over_sampling import SMOTE
 from sklearn import tree, svm, ensemble
 from sklearn.feature_selection import SelectKBest, f_classif, mutual_info_classif
 from sklearn.neural_network import MLPClassifier
+from sklearn.calibration import CalibratedClassifierCV
 from sklearn.model_selection import GridSearchCV,GroupShuffleSplit
 from sklearn.pipeline import Pipeline as Pipe
 from sklearn.preprocessing import StandardScaler
 
-from pipeline.extractor.xbi_extractor import XBIExtractor
 from pipeline.extractor.crosscheck_extractor import CrossCheckExtractor
 from pipeline.extractor.browserbite_extractor import BrowserbiteExtractor
 from pipeline.extractor.browserninja import *
@@ -84,7 +84,7 @@ def get_extractor(name, class_attr):
     return (extractor, features, nfeatures, max_features)
 
 
-def get_classifier(name, nfeatures, max_features):
+def get_classifier(classifier_name, nfeatures, max_features):
     if classifier_name == 'randomforest':
         model = Pipe([
             ('preprocessor', StandardScaler()),
@@ -126,7 +126,8 @@ def get_classifier(name, nfeatures, max_features):
         model = Pipe([
             ('preprocessor', StandardScaler()),
             ('selector', SelectKBest(f_classif)),
-            ('classifier', svm.LinearSVC(random_state=42))])
+            ('classifier', CalibratedClassifierCV(
+                svm.LinearSVC(random_state=42), cv=10))])
         classifier = GridSearchCV(model, {
                 'selector__k': nfeatures + ['all'],
                 'selector__score_func': [f_classif, mutual_info_classif],
@@ -171,7 +172,7 @@ def get_sampler():
     #return NoneSampler()
     #return TomekLinks()
     #return SMOTE()
-    return ClusterCentroids(sampling_strategy=0.1, voting='hard')
+    #return ClusterCentroids(sampling_strategy=0.1, voting='hard')
     #return NearMiss(sampling_strategy=0.1, version=1)
-    #return RandomUnderSampler(sampling_strategy=0.1, random_state=42)
+    return RandomUnderSampler(sampling_strategy=0.1, random_state=42)
 
