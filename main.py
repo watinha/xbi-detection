@@ -69,7 +69,7 @@ elif extractor_name == 'browserninja2':
             PositionViewportExtractor(),
             RelativePositionExtractor(),
             PlatformExtractor(),
-            FontFamilyExtractor(),
+            #FontFamilyExtractor(),
             ImageMomentsExtractor()
         ])
 else:
@@ -97,11 +97,8 @@ classifier = None
 nfeatures = []
 max_features = []
 if extractor_name == 'browserninja2':
-    #max_features = [5, 10, 15]
+    max_features = [5, 10, 15]
     nfeatures = [5, 10, 15]
-if extractor_name == 'browserninja1':
-    #max_features = [5, 10]
-    nfeatures = []
 
 if classifier_name == 'randomforest':
     model = Pipe([('selector', SelectKBest(f_classif)), ('classifier', ensemble.RandomForestClassifier())])
@@ -114,8 +111,8 @@ if classifier_name == 'randomforest':
             'classifier__min_samples_split': [3, 10], #'min_samples_split': [2, 3, 10, 30],
             'classifier__min_samples_leaf': [1, 5, 10],
             'classifier__max_features': max_features + ['auto'],
-            #'classifier__class_weight': [None, 'balanced']
-        }, cv=GroupShuffleSplit(n_splits=2, random_state=42), scoring='f1', error_score=0, verbose=3),
+            'classifier__class_weight': [None, 'balanced']
+        }, cv=GroupShuffleSplit(n_splits=2, random_state=42), scoring='f1', error_score=0, verbose=1),
         ensemble.RandomForestClassifier(random_state=42), 'URL')
 elif classifier_name == 'dt':
     model = Pipe([('selector', SelectKBest(f_classif)), ('classifier', tree.DecisionTreeClassifier())])
@@ -125,10 +122,10 @@ elif classifier_name == 'dt':
             'classifier__criterion': ["gini", "entropy"],
             'classifier__max_depth': [5, 10, None],
             'classifier__min_samples_split': [3, 10],
-            #'classifier__class_weight': [None, 'balanced'],
+            'classifier__class_weight': [None, 'balanced'],
             'classifier__max_features': max_features + ['auto'],
             'classifier__min_samples_leaf': [1, 5, 10]
-        }, cv=GroupShuffleSplit(n_splits=2, random_state=42), scoring='f1', error_score=0, verbose=3),
+        }, cv=GroupShuffleSplit(n_splits=2, random_state=42), scoring='f1', error_score=0, verbose=1),
         tree.DecisionTreeClassifier(random_state=42), 'URL')
 elif classifier_name == 'svm':
     #model = Pipe([('selector', SelectKBest(f_classif)), ('classifier', svm.SVC(probability=True))])
@@ -144,7 +141,7 @@ elif classifier_name == 'svm':
             'classifier__dual': [False],
             #'classifier__class_weight': ['balanced', None],
             'classifier__max_iter': [10000]
-        }, cv=GroupShuffleSplit(n_splits=2, random_state=42), scoring='f1', error_score=0, verbose=3),
+        }, cv=GroupShuffleSplit(n_splits=2, random_state=42), scoring='f1', error_score=0, verbose=1),
         #svm.SVC(random_state=42, probability=True), 'URL')
         svm.LinearSVC(random_state=42), 'URL')
 else:
@@ -160,17 +157,17 @@ else:
             'classifier__max_iter': [10000],
             #'classifier__learning_rate': ['constant', 'invscaling', 'adaptive'],
             'classifier__random_state': [42]
-        }, cv=GroupShuffleSplit(n_splits=2, random_state=42), scoring='f1', error_score=0, verbose=3),
+        }, cv=GroupShuffleSplit(n_splits=2, random_state=42), scoring='f1', error_score=0, verbose=1),
         MLPClassifier(random_state=42), 'URL')
 
 class NoneSampler:
-    def fit_sample(self, X, y):
+    def fit_resample(self, X, y):
         return X, y
 
-sampler = NoneSampler()
+#sampler = NoneSampler()
 #sampler = TomekLinks()
 #sampler = SMOTE()
-#sampler = ClusterCentroids(sampling_strategy=0.5, voting='hard')
+sampler = ClusterCentroids(sampling_strategy=0.1, voting='hard')
 #sampler = NearMiss(sampling_strategy=0.1, version=1)
 #sampler = RandomUnderSampler(sampling_strategy=0.1, random_state=42)
 
@@ -253,7 +250,7 @@ def cross_val_score_using_sampling(model, X, y, cv, groups, scoring):
             'best_f1': best_fscore, 'best_precision': best_precision, 'best_recall': best_recall, 'best_roc': best_roc }
 
 groupcv = None
-groupcv = GroupKFoldCV(GroupShuffleSplit(n_splits=18, random_state=42), 'URL', cross_val_score_using_sampling) # 72 websites + 3 platform comparison
+groupcv = GroupKFoldCV(GroupShuffleSplit(n_splits=10, random_state=42), 'URL', cross_val_score_using_sampling) # 72 websites + 3 platform comparison
 
 preprocessor = Preprocessor()
 approach = '%s-%s-%s-k%s' % (extractor_name, classifier_name, class_attr, str(k))
