@@ -22,6 +22,7 @@ RUN apk add tzdata \
             py3-zmq \
             tini
 RUN apk add pkgconfig wget
+RUN python -m pip install --upgrade pip
 RUN pip3 install --upgrade pip
 RUN pip3 install numpy
 RUN pip3 install np
