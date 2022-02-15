@@ -1,5 +1,7 @@
 import pandas as pd, arff
 
+pd.set_option('display.max_colwidth', None)
+
 def load_arff(filename):
     arff_data = {}
     with open(filename, 'r') as f:
