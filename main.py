@@ -48,7 +48,7 @@ for train_index, test_index in cv.split(X, y, groups):
 
     print('Model trainning with: X (%s)' % (str(X_samp.shape)))
     gridsearch.fit(X_samp, y_samp, groups=groups_samp)
-    print('Model trained: ' + str(gridsearch.best_estimator_))
+    print('Model trained with fscore %s, and params %s ' % (str(gridsearch.best_score_), str(gridsearch.best_params_)))
 
     selector = gridsearch.best_estimator_.named_steps['selector']
     rankings.append(selector.get_support(indices=False))
