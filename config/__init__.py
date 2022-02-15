@@ -167,10 +167,10 @@ class NoneSampler:
 
 
 def get_sampler():
-    #return NoneSampler()
+    return NoneSampler()
     #return TomekLinks()
     #return SMOTE()
     #return ClusterCentroids(sampling_strategy=0.1, voting='hard')
     #return NearMiss(sampling_strategy=0.1, version=1)
-    return RandomUnderSampler(sampling_strategy=0.1, random_state=42)
+    #return RandomUnderSampler(sampling_strategy=0.1, random_state=42)
 

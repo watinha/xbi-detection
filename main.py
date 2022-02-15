@@ -17,6 +17,7 @@ random.seed(42)
 class_attr = sys.argv[3]
 extractor_name = sys.argv[1]
 classifier_name = sys.argv[2]
+n_splits = 16
 
 (extractor, features, nfeatures, max_features) = get_extractor(
         extractor_name, class_attr)
@@ -34,8 +35,8 @@ X, y, attributes = data['X'], data['y'], [ attr[0] for attr in data['attributes'
 groups = list(data['data'][:, attributes.index('URL')])
 
 print('data extracted...')
-rankings, fscore, precision, recall, roc = [], [], [], [], []
-cv = GroupShuffleSplit(n_splits=10, random_state=42)
+rankings, fscore, precision, recall, roc, train_fscore = [], [], [], [], [], []
+cv = GroupShuffleSplit(n_splits=n_splits, random_state=42)
 for train_index, test_index in cv.split(X, y, groups):
     X_train, X_test = X[train_index], X[test_index]
     y_train, y_test = y[train_index], y[test_index]
@@ -58,14 +59,14 @@ for train_index, test_index in cv.split(X, y, groups):
     else:
         model = gridsearch
 
-    y_pred = model.predict_proba(X_samp)
+    y_pred = model.predict_proba(X_train)
     print('gridsearch classes %s' %
             (str(gridsearch.best_estimator_.named_steps['classifier'].classes_)))
     probability = y_pred[:, list(
         gridsearch.best_estimator_.named_steps['classifier'].classes_).index(1)]
 
     precision2, recall2, threasholds = metrics.precision_recall_curve(
-            y_samp, probability)
+            y_train, probability)
     best_f = 0
     threashold = 0
     for i in range(len(precision2)):
@@ -74,6 +75,7 @@ for train_index, test_index in cv.split(X, y, groups):
             best_f = new_fscore
             threshold = threasholds[i]
 
+    train_fscore.append(metrics.f1_score(y_train, [ 0 if prob < threshold else 1 for prob in probability]))
     y_pred = model.predict_proba(X_test)
     probability = y_pred[:, list(
         gridsearch.best_estimator_.named_steps['classifier'].classes_).index(1)]
@@ -87,9 +89,10 @@ for train_index, test_index in cv.split(X, y, groups):
 
 print('Features: ' + str(features))
 print('X dimensions:' + str(X.shape))
-print('Test     ROC: %f' % (reduce(lambda x,y: x+y, roc) / 10))
-print('Test      F1: %f' % (reduce(lambda x,y: x+y, fscore) / 10))
+print('Test     ROC: %f' % (reduce(lambda x,y: x+y, roc) / n_splits))
+print('Test      F1: %f' % (reduce(lambda x,y: x+y, fscore) / n_splits))
 print('Test      F1: ' + str(fscore))
+print('Train     F1: ' + str(train_fscore))
 print('Test      Precision: ' + str(precision))
 print('Test      Recall: ' + str(recall))
 
