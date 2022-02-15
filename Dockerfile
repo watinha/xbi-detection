@@ -4,7 +4,8 @@ WORKDIR /app
 EXPOSE 3000
 RUN apk add --update python3 python3-dev gfortran py-pip build-base g++ gfortran file binutils \
                      musl-dev openblas-dev libstdc++ openblas libpng-dev freetype-dev
-RUN apk add fontconfig \
+RUN apk add tzdata \
+            fontconfig \
             py3-dateutil \
             py3-decorator \
             py3-defusedxml \
@@ -34,5 +35,7 @@ RUN pip3 install seaborn
 RUN pip3 install matplotlib
 RUN pip3 install liac-arff
 RUN pip3 install imblearn
+RUN cp /usr/share/zoneinfo/America/Sao_Paulo /etc/localtime
+RUN echo "America/Sao_Paulo" > /etc/timezone
 
 CMD ["ash"]
