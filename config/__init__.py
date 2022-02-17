@@ -1,4 +1,4 @@
-from imblearn.under_sampling import TomekLinks, ClusterCentroids, NearMiss, RandomUnderSampler
+from imblearn.under_sampling import TomekLinks, ClusterCentroids, NearMiss, RandomUnderSampler, RepeatedEditedNearestNeighbours, NeighbourhoodCleaningRule
 from imblearn.over_sampling import SMOTE
 from sklearn import tree, svm, ensemble
 from sklearn.feature_selection import SelectKBest, f_classif, mutual_info_classif
@@ -100,7 +100,7 @@ def get_classifier(classifier_name, nfeatures, max_features):
                 'classifier__max_features': max_features + ['auto'],
                 'classifier__class_weight': ['balanced'], #[None, 'balanced']
             }, cv=GroupShuffleSplit(n_splits=2, random_state=42),
-            scoring='f1', error_score=0, verbose=1)
+            scoring='f1', error_score=0, verbose=0)
 
     elif classifier_name == 'dt':
         model = Pipe([
@@ -117,7 +117,7 @@ def get_classifier(classifier_name, nfeatures, max_features):
                 'classifier__max_features': max_features + ['auto'],
                 'classifier__min_samples_leaf': [1, 5, 10]
             }, cv=GroupShuffleSplit(n_splits=2, random_state=42),
-            scoring='f1', error_score=0, verbose=1)
+            scoring='f1', error_score=0, verbose=0)
     elif classifier_name == 'svm':
         #model = Pipe([
         #    ('selector', SelectKBest(f_classif)),
@@ -138,7 +138,7 @@ def get_classifier(classifier_name, nfeatures, max_features):
                 'classifier__class_weight': ['balanced'], #[None, 'balanced']
                 'classifier__max_iter': [10000]
             }, cv=GroupShuffleSplit(n_splits=2, random_state=42),
-            scoring='f1', error_score=0, verbose=1)
+            scoring='f1', error_score=0, verbose=0)
     else:
         model = Pipe([
             ('preprocessor', StandardScaler()),
@@ -156,7 +156,7 @@ def get_classifier(classifier_name, nfeatures, max_features):
                 #'classifier__learning_rate': ['constant', 'invscaling', 'adaptive'],
                 'classifier__random_state': [42]
             }, cv=GroupShuffleSplit(n_splits=2, random_state=42),
-            scoring='f1', error_score=0, verbose=1)
+            scoring='f1', error_score=0, verbose=0)
 
     return classifier
 
@@ -165,12 +165,15 @@ class NoneSampler:
     def fit_resample(self, X, y):
         return X, y
 
+samplers = {
+    'none': NoneSampler(),
+    'tomek': TomekLinks(),
+    'near': NearMiss(sampling_strategy=0.1, version=2),
+    'repeated': RepeatedEditedNearestNeighbours(),
+    'rule': NeighbourhoodCleaningRule(threshold_cleaning=0.1),
+    'random': RandomUnderSampler(sampling_strategy=0.1, random_state=42)
+}
 
-def get_sampler():
-    return NoneSampler()
-    #return TomekLinks()
-    #return SMOTE()
-    #return ClusterCentroids(sampling_strategy=0.1, voting='hard')
-    #return NearMiss(sampling_strategy=0.1, version=1)
-    #return RandomUnderSampler(sampling_strategy=0.1, random_state=42)
+def get_sampler(sampler_name):
+    return samplers[sampler_name]
 

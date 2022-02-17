@@ -10,19 +10,20 @@ from pipeline import Pipeline
 from pipeline.extractor.xbi_extractor import XBIExtractor
 from pipeline.loader.arff_loader import ArffLoader
 
-assert len(sys.argv) == 4, 'The script accepts 3 parameters: feature extractor (browserbite|crosscheck|browserninja1|browserninja2), classifier (randomforest|svm|dt|nn) and type of xbi (internal|external)'
+assert len(sys.argv) == 5, 'The script requires 4 parameters: feature extractor (browserbite|crosscheck|browserninja1|browserninja2), classifier (randomforest|svm|dt|nn), type of xbi (internal|external) and sampler strategy (none|tomek|near|repeated|rule|random)'
 
 random.seed(42)
 
 class_attr = sys.argv[3]
 extractor_name = sys.argv[1]
 classifier_name = sys.argv[2]
-n_splits = 16
+sampler_name = sys.argv[4]
+n_splits = 10
 
 (extractor, features, nfeatures, max_features) = get_extractor(
         extractor_name, class_attr)
 gridsearch = get_classifier(classifier_name, nfeatures, max_features)
-sampler = get_sampler()
+sampler = get_sampler(sampler_name)
 
 approach = '%s-%s-%s' % (extractor_name, classifier_name, class_attr)
 print('running --- %s...' % (approach))
@@ -31,7 +32,7 @@ extractor_pipeline = Pipeline([
     ArffLoader(), XBIExtractor(features, class_attr), extractor ])
 data = extractor_pipeline.execute(open(
     'data/19112021/dataset.classified.hist.img.%s.arff' % (class_attr)).read())
-X, y, attributes = data['X'], data['y'], [ attr[0] for attr in data['attributes'] ]
+X, y, attributes, features = data['X'], data['y'], [ attr[0] for attr in data['attributes'] ], data['features']
 groups = list(data['data'][:, attributes.index('URL')])
 
 print('data extracted...')
@@ -60,8 +61,6 @@ for train_index, test_index in cv.split(X, y, groups):
         model = gridsearch
 
     y_pred = model.predict_proba(X_train)
-    print('gridsearch classes %s' %
-            (str(gridsearch.best_estimator_.named_steps['classifier'].classes_)))
     probability = y_pred[:, list(
         gridsearch.best_estimator_.named_steps['classifier'].classes_).index(1)]
 
@@ -75,12 +74,15 @@ for train_index, test_index in cv.split(X, y, groups):
             best_f = new_fscore
             threshold = threasholds[i]
 
+    print('Model training F-Score with selected threshold: %f' % (metrics.f1_score(y_train, [ 0 if prob < threshold else 1 for prob in probability])))
+
     train_fscore.append(metrics.f1_score(y_train, [ 0 if prob < threshold else 1 for prob in probability]))
     y_pred = model.predict_proba(X_test)
     probability = y_pred[:, list(
         gridsearch.best_estimator_.named_steps['classifier'].classes_).index(1)]
 
     y_threashold = [ 0 if y < threshold else 1 for y in probability]
+    print('Model tested with F-Score: %f' % (metrics.f1_score(y_test, y_threashold)))
     fscore.append(metrics.f1_score(y_test, y_threashold))
     precision.append(metrics.precision_score(y_test, y_threashold))
     recall.append(metrics.recall_score(y_test, y_threashold))
@@ -124,6 +126,10 @@ except:
     features_csv = pd.DataFrame(columns=features)
 
 features_len = features_csv.shape[1]
+print(features)
+print(features_len)
+print(rankings)
+
 if extractor_name == 'browserninja2':
     for i in range(len(rankings)):
         features_csv.loc[
