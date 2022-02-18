@@ -12,7 +12,7 @@ from pipeline.loader.arff_loader import ArffLoader
 
 random.seed(42)
 
-def main(extractor_name, classifier_name, class_attr, sampler_name, n_splits):
+def main(extractor_name, classifier_name, class_attr, sampler_name, n_splits, path='.'):
     (extractor, features, nfeatures, max_features) = get_extractor(
             extractor_name, class_attr)
     gridsearch = get_classifier(classifier_name, nfeatures, max_features)
@@ -24,7 +24,7 @@ def main(extractor_name, classifier_name, class_attr, sampler_name, n_splits):
     extractor_pipeline = Pipeline([
         ArffLoader(), XBIExtractor(features, class_attr), extractor ])
     data = extractor_pipeline.execute(open(
-        './xbi-detection/data/19112021/dataset.classified.hist.img.%s.arff' % (class_attr)).read())
+        '%s/data/19112021/dataset.classified.hist.img.%s.arff' % (path, class_attr)).read())
     X, y, attributes, features = data['X'], data['y'], [ attr[0] for attr in data['attributes'] ], data['features']
     groups = list(data['data'][:, attributes.index('URL')])
 
