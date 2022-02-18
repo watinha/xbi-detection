@@ -1,41 +1,29 @@
-FROM python:3.7.3-alpine
-ADD . /app
-WORKDIR /app
-EXPOSE 3000
-RUN apk add --update python3 python3-dev gfortran py-pip build-base g++ gfortran file binutils \
-                     musl-dev openblas-dev libstdc++ openblas libpng-dev freetype-dev
-RUN apk add tzdata \
-            fontconfig \
-            py3-dateutil \
-            py3-decorator \
-            py3-defusedxml \
-            py3-jinja2 \
-            py3-jsonschema \
-            py3-markupsafe \
-            py3-pexpect \
-            py3-prompt_toolkit \
-            py3-pygments \
-            py3-ptyprocess \
-            py3-six \
-            py3-tornado \
-            py3-wcwidth \
-            py3-zmq \
-            tini
-RUN apk add pkgconfig wget
+FROM python:3.10.2-alpine3.15
+RUN apk add python3-dev \
+            g++ \
+            jpeg-dev \
+            openblas-dev \
+            lapack-dev \
+            build-base \
+            tzdata
+
+
 RUN python -m pip install --upgrade pip
-RUN pip3 install --upgrade pip
-RUN pip3 install numpy
-RUN pip3 install np
-RUN pip3 install 'scipy<1.4'
-RUN pip3 install Cython
-RUN pip3 install sklearn
-RUN pip3 install nltk
-RUN python3 setup.py
-RUN pip3 install pandas
-RUN pip3 install seaborn
-RUN pip3 install matplotlib
-RUN pip3 install liac-arff
-RUN pip3 install imblearn
+RUN pip install --upgrade pip
+RUN pip install numpy
+RUN pip install np
+RUN pip install scipy
+RUN pip install Cython
+RUN pip install scikit-learn
+RUN pip install nltk
+RUN pip install pandas
+
+RUN apk add zlib-dev
+RUN pip install seaborn
+RUN pip install matplotlib
+RUN pip install liac-arff
+RUN pip install imbalanced-learn
+RUN pip install Pillow
 RUN cp /usr/share/zoneinfo/America/Sao_Paulo /etc/localtime
 RUN echo "America/Sao_Paulo" > /etc/timezone
 
