@@ -139,4 +139,4 @@ if __name__ == '__main__':
     sampler_name = sys.argv[4]
     n_splits = 10
 
-    main(class_attr, extractor_name, classifier_name, sampler_name, n_splits)
+    main(extractor_name, classifier_name, class_attr, sampler_name, n_splits)
