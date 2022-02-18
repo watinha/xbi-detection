@@ -10,15 +10,7 @@ from pipeline import Pipeline
 from pipeline.extractor.xbi_extractor import XBIExtractor
 from pipeline.loader.arff_loader import ArffLoader
 
-assert len(sys.argv) == 5, 'The script requires 4 parameters: feature extractor (browserbite|crosscheck|browserninja1|browserninja2), classifier (randomforest|svm|dt|nn), type of xbi (internal|external) and sampler strategy (none|tomek|near|repeated|rule|random)'
-
 random.seed(42)
-
-class_attr = sys.argv[3]
-extractor_name = sys.argv[1]
-classifier_name = sys.argv[2]
-sampler_name = sys.argv[4]
-n_splits = 10
 
 def main(class_attr, extractor_name, classifier_name, sampler_name, n_splits):
     (extractor, features, nfeatures, max_features) = get_extractor(
@@ -139,4 +131,12 @@ def main(class_attr, extractor_name, classifier_name, sampler_name, n_splits):
 
 
 if __name__ == '__main__':
+    assert len(sys.argv) == 5, 'The script requires 4 parameters: feature extractor (browserbite|crosscheck|browserninja1|browserninja2), classifier (randomforest|svm|dt|nn), type of xbi (internal|external) and sampler strategy (none|tomek|near|repeated|rule|random)'
+
+    class_attr = sys.argv[3]
+    extractor_name = sys.argv[1]
+    classifier_name = sys.argv[2]
+    sampler_name = sys.argv[4]
+    n_splits = 10
+
     main(class_attr, extractor_name, classifier_name, sampler_name, n_splits)
