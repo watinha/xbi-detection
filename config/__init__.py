@@ -1,4 +1,4 @@
-from imblearn.under_sampling import TomekLinks, ClusterCentroids, NearMiss, RandomUnderSampler, RepeatedEditedNearestNeighbours, NeighbourhoodCleaningRule
+from imblearn.under_sampling import TomekLinks, ClusterCentroids, NearMiss, RandomUnderSampler, RepeatedEditedNearestNeighbours, NeighbourhoodCleaningRule, OneSidedSelection
 from imblearn.over_sampling import SMOTE
 from sklearn import tree, svm, ensemble
 from sklearn.feature_selection import SelectKBest, f_classif, mutual_info_classif
@@ -171,7 +171,8 @@ samplers = {
     'near': NearMiss(sampling_strategy=0.1, version=2),
     'repeated': RepeatedEditedNearestNeighbours(),
     'rule': NeighbourhoodCleaningRule(threshold_cleaning=0.1),
-    'random': RandomUnderSampler(sampling_strategy=0.1, random_state=42)
+    'random': RandomUnderSampler(sampling_strategy=0.1, random_state=42),
+    'one_sided': OneSidedSelection()
 }
 
 def get_sampler(sampler_name):
