@@ -92,12 +92,12 @@ def get_classifier(classifier_name, nfeatures, max_features):
         classifier = GridSearchCV(model, {
                 'selector__k': nfeatures + ['all'],
                 'selector__score_func': [f_classif, mutual_info_classif],
-                'classifier__n_estimators': [5, 10, 15],
+                'classifier__n_estimators': [10, 20],
                 'classifier__criterion': ["gini", "entropy"],
-                'classifier__max_depth': [5, 10, None],
-                'classifier__min_samples_split': [3, 10],
-                'classifier__min_samples_leaf': [1, 5, 10],
-                'classifier__max_features': max_features + ['auto'],
+                'classifier__max_depth': [10, 20],
+                'classifier__min_samples_split': [6, 10],
+                'classifier__min_samples_leaf': [3, 5],
+                'classifier__max_features': ['auto'], #max_features + ['auto'],
                 'classifier__class_weight': ['balanced'], #[None, 'balanced']
             }, cv=GroupShuffleSplit(n_splits=2, random_state=42),
             scoring='f1', error_score=0, verbose=0)
@@ -111,11 +111,11 @@ def get_classifier(classifier_name, nfeatures, max_features):
                 'selector__k': nfeatures + ['all'],
                 'selector__score_func': [f_classif, mutual_info_classif],
                 'classifier__criterion': ["gini", "entropy"],
-                'classifier__max_depth': [5, 10, None],
-                'classifier__min_samples_split': [3, 10],
+                'classifier__max_depth': [10, 20],
+                'classifier__min_samples_split': [6, 10],
+                'classifier__min_samples_leaf': [3, 5],
                 'classifier__class_weight': ['balanced'], #[None, 'balanced']
-                'classifier__max_features': max_features + ['auto'],
-                'classifier__min_samples_leaf': [1, 5, 10]
+                'classifier__max_features': ['auto'], # max_features + ['auto'],
             }, cv=GroupShuffleSplit(n_splits=2, random_state=42),
             scoring='f1', error_score=0, verbose=0)
     elif classifier_name == 'svm':

@@ -137,6 +137,6 @@ if __name__ == '__main__':
     extractor_name = sys.argv[1]
     classifier_name = sys.argv[2]
     sampler_name = sys.argv[4]
-    n_splits = 10
+    n_splits = 24
 
     main(extractor_name, classifier_name, class_attr, sampler_name, n_splits)
