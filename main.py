@@ -30,19 +30,28 @@ def main(extractor_name, class_attr, sampler_name, n_splits, path='.'):
     rankings, fscore, precision, recall, roc, train_fscore = [], [], [], [], [], []
     cv = GroupShuffleSplit(n_splits=n_splits, random_state=42)
 
+    cache = {}
+
     for classifier_name in ['svm', 'nn', 'dt', 'randomforest']:
         approach = '%s-%s-%s' % (extractor_name, classifier_name, class_attr)
         print('running --- %s...' % (approach))
         gridsearch = get_classifier(classifier_name, nfeatures, max_features)
 
-        for train_index, test_index in cv.split(X, y, groups):
+        for ind, (train_index, test_index) in enumerate(cv.split(X, y, groups)):
             X_train, X_test = X[train_index], X[test_index]
             y_train, y_test = y[train_index], y[test_index]
             groups_train = [i for i in groups if groups.index(i) in train_index]
 
-            X_samp, y_samp = sampler.fit_resample(X_train, y_train)
-            groups_samp = [
-                    groups_train[X_train.tolist().index(row)] for row in X_samp.tolist() ]
+            if ind in cache:
+                print('Sample recovered from cache...')
+                (X_samp, y_samp, groups_samp) = cache[ind]
+            else:
+                print('Sample recovered from cache...')
+                (X_samp, y_samp, groups_samp) = cache[ind]
+                X_samp, y_samp = sampler.fit_resample(X_train, y_train)
+                groups_samp = [
+                        groups_train[X_train.tolist().index(row)] for row in X_samp.tolist() ]
+                cache[ind] = (X_samp, y_samp, groups_samp)
 
             print('Model trainning with: X (%s)' % (str(X_samp.shape)))
             gridsearch.fit(X_samp, y_samp, groups=groups_samp)
