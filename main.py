@@ -46,8 +46,7 @@ def main(extractor_name, class_attr, sampler_name, n_splits, path='.'):
                 print('Sample recovered from cache...')
                 (X_samp, y_samp, groups_samp) = cache[ind]
             else:
-                print('Sample recovered from cache...')
-                (X_samp, y_samp, groups_samp) = cache[ind]
+                print('Running sampling strategy...')
                 X_samp, y_samp = sampler.fit_resample(X_train, y_train)
                 groups_samp = [
                         groups_train[X_train.tolist().index(row)] for row in X_samp.tolist() ]
