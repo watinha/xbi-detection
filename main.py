@@ -27,12 +27,12 @@ def main(extractor_name, class_attr, sampler_name, n_splits, path='.'):
     groups = list(data['data'][:, attributes.index('URL')])
 
     print('data extracted...')
-    rankings, fscore, precision, recall, roc, train_fscore = [], [], [], [], [], []
     cv = GroupShuffleSplit(n_splits=n_splits, random_state=42)
 
     cache = {}
 
     for classifier_name in ['svm', 'nn', 'dt', 'randomforest']:
+        rankings, fscore, precision, recall, roc, train_fscore = [], [], [], [], [], []
         approach = '%s-%s-%s' % (extractor_name, classifier_name, class_attr)
         print('running --- %s...' % (approach))
         gridsearch = get_classifier(classifier_name, nfeatures, max_features)
