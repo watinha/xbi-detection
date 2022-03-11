@@ -84,6 +84,9 @@ def get_extractor(name, class_attr):
 
 
 def get_classifier(classifier_name, nfeatures, max_features):
+    score_funcs = [f_classif]
+    if len(nfeatures) > 0:
+        score_funcs = [f_classif, mutual_info_classif]
     if classifier_name == 'randomforest':
         model = Pipe([
             ('preprocessor', StandardScaler()),
@@ -91,7 +94,7 @@ def get_classifier(classifier_name, nfeatures, max_features):
             ('classifier', ensemble.RandomForestClassifier())])
         classifier = GridSearchCV(model, {
                 'selector__k': nfeatures + ['all'],
-                'selector__score_func': [f_classif, mutual_info_classif],
+                'selector__score_func': score_funcs,
                 'classifier__n_estimators': [10, 20],
                 'classifier__criterion': ["gini", "entropy"],
                 'classifier__max_depth': [10, 20],
@@ -109,7 +112,7 @@ def get_classifier(classifier_name, nfeatures, max_features):
             ('classifier', tree.DecisionTreeClassifier())])
         classifier = GridSearchCV(model, {
                 'selector__k': nfeatures + ['all'],
-                'selector__score_func': [f_classif, mutual_info_classif],
+                'selector__score_func': score_funcs,
                 'classifier__criterion': ["gini", "entropy"],
                 'classifier__max_depth': [10, 20],
                 'classifier__min_samples_split': [6, 10],
@@ -128,7 +131,7 @@ def get_classifier(classifier_name, nfeatures, max_features):
             ('classifier', svm.LinearSVC(random_state=42))])
         classifier = GridSearchCV(model, {
                 'selector__k': nfeatures + ['all'],
-                'selector__score_func': [f_classif, mutual_info_classif],
+                'selector__score_func': score_funcs,
                 #'classifier__kernel': ['linear', 'rbf'], #'poly', 'sigmoid'],
                 #'classifier__degree': [2, 3],
                 #'classifier__coef0': [0, 10, 100],
@@ -146,7 +149,7 @@ def get_classifier(classifier_name, nfeatures, max_features):
             ('classifier', MLPClassifier())])
         classifier = GridSearchCV(model, {
                 'selector__k': nfeatures + ['all'],
-                'selector__score_func': [f_classif, mutual_info_classif],
+                'selector__score_func': score_funcs,
                 'classifier__hidden_layer_sizes': [10, 20, 30],
                 #'classifier__activation': ['identity', 'logistic', 'tanh', 'relu'],
                 'classifier__activation': ['tanh', 'relu'],
